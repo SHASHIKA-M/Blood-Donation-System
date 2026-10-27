@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('IT Operations Portal')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('admin')}"></header>
+
+    <main class="container wide" style="padding-block: 40px 80px;">
+        <!-- Stakeholder Navigation -->
+        <div th:replace="~{portal/_nav :: portalNav('it')}"></div>
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <!-- Page Header -->
+        <div th:replace="~{portal/_hero :: portalHero('/images/photos/medical-team.jpg','IT Administration','IT Operations & Access Governance','Manage role-based access control, provision clinical user accounts, and review security audit trails.')}"></div>
+
+        <!-- Role & Permissions Matrix -->
+        <div class="form-card" style="margin: 0 0 32px 0; padding: 24px;">
+            <style>
+                .rbac-scroll-container::-webkit-scrollbar { width: 6px; }
+                .rbac-scroll-container::-webkit-scrollbar-track { background: var(--slate-100); border-radius: 99px; }
+                .rbac-scroll-container::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 99px; }
+                .rbac-scroll-container::-webkit-scrollbar-thumb:hover { background: var(--slate-400); }
+            </style>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; flex-wrap: wrap; gap: 8px;">
+                <h2 style="font-size: 1.2rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 0;">
+                    Role-Based Access Control (RBAC) Permissions Matrix
+                </h2>
+                <span style="font-size: 0.78rem; color: var(--slate-500); background: var(--slate-100); border: 1px solid var(--slate-200); padding: 3px 10px; border-radius: 99px; font-weight: 600;">
+                    ↕ Scroll to view all personas (1 at a time)
+                </span>
+            </div>
+            <p style="color: var(--slate-500); font-size: 0.85rem; margin: 0 0 16px 0;">Tick scopes per stakeholder persona, then save — changes apply immediately</p>
+
+            <div class="rbac-scroll-container" style="display: flex; flex-direction: column; gap: 14px; max-height: 355px; overflow-y: auto; padding-right: 8px; scrollbar-width: thin; scrollbar-color: var(--slate-300) transparent;">
+                <form th:each="entry : ${permissions}" th:action="@{/portal/it/permissions}" method="post" class="perm-form"
+                      style="background: var(--slate-50); border: 1.5px solid var(--slate-200); border-radius: var(--radius-md); padding: 16px 18px;">
+                    <input type="hidden" name="role" th:value="${entry.key}">
+                    <input type="hidden" name="permissions" value="">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="blood-badge sm" th:text="${#strings.substring(entry.key.displayName, 0, 1)}">R</span>
+                            <strong style="color: var(--oxford-blue-1); font-size: 1rem;" th:text="${entry.key.displayName}">Role Name</strong>
+                            <span class="status-badge available" th:text="${#lists.size(#strings.arraySplit(entry.value, ','))} + ' scopes'">3 scopes</span>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm" style="font-size: 0.8rem; white-space: nowrap;">
+                            Save Scopes
+                        </button>
+                    </div>
+                    <div class="screen-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 12px;">
+                        <label class="screen-chip" th:each="scope : ${operationalScopes}" th:title="${scope}">
+                            <input type="checkbox" th:checked="${#lists.contains(#strings.arraySplit(entry.value, ','), scope)}" th:value="${scope}">
+                            <span th:text="${scope}" style="font-size: 0.72rem;">SCOPE</span>
+                        </label>
+                    </div>
+
+                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--slate-200);">
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: #b45309; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">
+                            <span>🔒 ADMIN CONSOLE</span>
+                        </div>
+                        <div class="screen-grid" style="grid-template-columns: repeat(4, 1fr);">
+                            <label class="screen-chip" th:each="scope : ${adminScopes}" th:title="${scope}">
+                                <input type="checkbox" th:checked="${#lists.contains(#strings.arraySplit(entry.value, ','), scope)}" th:value="${scope}">
+                                <span th:text="${scope}" style="font-size: 0.72rem;">SCOPE</span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Storage Facility & Branch Access Control -->
+        <div class="form-card" style="margin: 0 0 32px 0; padding: 24px; border-top: 3px solid var(--carolina-blue);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 14px;">
+                <div style="max-width: 620px;">
+                    <h2 style="font-size: 1.2rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 2px;">
+                        Storage Facility &amp; Branch Access Governance
+                    </h2>
+                    <p style="color: var(--slate-500); font-size: 0.85rem; margin: 0;">
+                        Grant or restrict stakeholder access to storage facility branches. Disabled branches are hidden from manager dashboards and restricted from batch intake.
+                    </p>
+                </div>
+
+                <!-- Add New Branch Form -->
+                <form th:action="@{/portal/it/branches/add}" method="post" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <input type="text" name="branchName" required placeholder="New branch name (e.g. Jaffna Branch)"
+                           class="form-control" style="font-size: 0.85rem; width: 250px; padding: 8px 12px;">
+                    <button type="submit" class="btn btn-secondary btn-sm" style="white-space: nowrap; font-size: 0.82rem;">
+                        + Add Branch
+                    </button>
+                </form>
+            </div>
+
+            <form th:action="@{/portal/it/branch-access}" method="post">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                    <div th:each="b : ${allBranches}" 
+                         style="background: var(--slate-50); border: 1.5px solid var(--slate-200); border-radius: var(--radius-md); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <strong style="color: var(--oxford-blue-1); font-size: 1rem;" th:text="${b}">Colombo Central</strong>
+                            </div>
+                            <div>
+                                <span th:if="${#lists.contains(activeBranches, b)}" class="status-badge available" style="font-size: 0.75rem;">Active &amp; Accessible</span>
+                                <span th:unless="${#lists.contains(activeBranches, b)}" class="status-badge disabled" style="font-size: 0.75rem;">Access Restricted</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--oxford-blue-1);">
+                                <input type="checkbox" name="branches" th:value="${b}" th:checked="${#lists.contains(activeBranches, b)}" style="width: 18px; height: 18px; accent-color: var(--royal-blue); cursor: pointer;">
+                                Grant Access
+                            </label>
+                            <button type="button" th:if="${b != 'Colombo Central'}"
+                                    th:data-branch="${b}"
+                                    onclick="openBranchEditModal(this.getAttribute('data-branch'))"
+                                    class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;"
+                                    title="Rename this branch">✏️</button>
+                            <button type="button" th:if="${b != 'Colombo Central'}"
+                                    th:data-branch="${b}"
+                                    onclick="deleteBranch(this.getAttribute('data-branch'))"
+                                    class="btn btn-sm" style="font-size: 0.72rem; padding: 2px 6px; color: #dc2626; border: 1px solid #fca5a5; background: #fff;"
+                                    title="Delete this branch">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    Save Branch Access Configuration
+                </button>
+            </form>
+
+            <!-- Hidden form to process branch deletion safely outside nested forms -->
+            <form id="deleteBranchForm" th:action="@{/portal/it/branches/delete}" method="post" style="display: none;">
+                <input type="hidden" name="branchName" id="deleteBranchNameInput">
+            </form>
+
+            <!-- Rename Branch Modal -->
+            <div id="branchEditModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+                <div class="form-card" style="max-width: 440px; width: 100%; margin: 0; padding: 28px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                        <h3 style="font-size: 1.2rem; color: var(--oxford-blue-1); font-weight: 700; margin: 0;">
+                            Rename Branch Facility
+                        </h3>
+                        <button type="button" onclick="closeBranchEditModal()" style="background: none; border: none; font-size: 1.4rem; color: var(--slate-400); cursor: pointer;">&times;</button>
+                    </div>
+                    <form id="branchEditForm" th:action="@{/portal/it/branches/rename}" method="post" style="display: flex; flex-direction: column; gap: 14px;">
+                        <div>
+                            Current name: <strong id="modalBranchOldName" style="color: var(--oxford-blue-1);"></strong>
+                        </div>
+                        <input type="hidden" name="oldName" id="editBranchOldName">
+                        <div class="form-group">
+                            <label class="form-label">New Branch Name *</label>
+                            <input type="text" id="editBranchNewName" name="newName" required minlength="2" maxlength="60"
+                                   placeholder="e.g. Jaffna Branch" class="form-control">
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--slate-500); margin: 0;">Stocked units and access rights move to the new name automatically.</p>
+                        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+                            <button type="button" class="btn btn-secondary" onclick="closeBranchEditModal()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Rename Branch</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Provisioning & User List -->
+        <div class="it-accounts-grid" style="margin-bottom: 32px;">
+            <!-- Create Account Card -->
+            <div class="form-card" style="margin: 0; padding: 24px; border-top: 3px solid var(--royal-blue);">
+                <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 16px;">
+                    Provision User Account
+                </h3>
+                <form th:action="@{/portal/it/users}" method="post" style="display: flex; flex-direction: column; gap: 14px;">
+                    <div class="form-grid-2" style="gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Username *</label>
+                            <input name="username" required placeholder="e.g. jdoe_hospital" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password *</label>
+                            <input type="password" name="password" required placeholder="••••••••" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input name="fullName" required placeholder="Dr. Jane Doe" class="form-control">
+                    </div>
+
+                    <div class="form-grid-2" style="gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Assign Role *</label>
+                            <select name="role" id="provisionRole" required class="form-select" onchange="toggleProvisionHospital()">
+                                <option th:each="r : ${roles}" th:value="${r}" th:text="${r.displayName}"></option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="provisionHospitalWrap" style="display: none;">
+                            <label class="form-label">Hospital (Coordinator Role)</label>
+                            <input name="hospital" id="provisionHospital" placeholder="National Hospital" class="form-control">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="margin-top: 4px;">
+                        Create User Account
+                    </button>
+                </form>
+            </div>
+
+            <!-- Registered Accounts List: Staff -->
+            <div class="data-table-card">
+                <div style="padding: 18px 20px; border-bottom: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 1.1rem; color: var(--oxford-blue-1); font-weight: 700; margin: 0;">
+                        Staff Accounts
+                    </h3>
+                    <span class="badge" style="background: #f1f5f9; color: var(--slate-600);" th:text="${#lists.size(staffUsers)} + ' Users'">0 Users</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Full Name</th>
+                                <th>Role</th>
+                                <th>Active</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(staffUsers)}">
+                                <td colspan="5" style="text-align: center; color: var(--slate-400); font-size: 0.85rem;">No accounts found.</td>
+                            </tr>
+                            <tr th:each="u : ${staffUsers}">
+                                <td>
+                                    <span style="font-weight: 600; color: var(--royal-blue); font-family: monospace; font-size: 0.85rem;" th:text="${u.username}">admin</span>
+                                </td>
+                                <td th:text="${u.fullName}" th:title="${u.fullName}" style="font-size: 0.88rem; white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis;">Administrator</td>
+                                <td>
+                                    <span class="badge badge-info" th:text="${u.role.displayName}" style="font-size: 0.75rem;">Admin</span>
+                                </td>
+                                <td>
+                                    <span th:class="${u.active ? 'badge badge-success' : 'badge badge-danger'}" 
+                                          th:text="${u.active ? 'Active' : 'Disabled'}" style="font-size: 0.75rem;">Active</span>
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 4px; align-items: center;">
+                                        <form th:action="@{'/portal/it/users/' + ${u.id} + '/toggle-status'}" method="post" style="display: inline;">
+                                            <button type="submit" class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;"
+                                                    th:text="${u.active ? 'Disable' : 'Enable'}">
+                                                Toggle
+                                            </button>
+                                        </form>
+                                        <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;"
+                                                th:data-id="${u.id}"
+                                                th:data-username="${u.username}"
+                                                th:data-name="${u.fullName}"
+                                                th:data-role="${u.role.name()}"
+                                                th:data-hospital="${u.hospital}"
+                                                onclick="openItUserEditModal(this)">
+                                            ✏️
+                                        </button>
+                                        <form th:unless="${u.username == 'admin' or (session.currentUser != null and session.currentUser.username == u.username)}"
+                                              th:action="@{'/portal/it/users/' + ${u.id} + '/delete'}" method="post" style="display: inline;"
+                                              onsubmit="return confirm('Permanently remove this user account?');">
+                                            <button type="submit" class="btn btn-sm" style="font-size: 0.72rem; padding: 2px 6px; color: #dc2626; border: 1px solid #fca5a5; background: #fff;" title="Delete User">
+                                                🗑️
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+            <!-- Donor Logins (separate) -->
+            <div class="data-table-card" style="margin-top: 24px;">
+                <div style="padding: 18px 20px; border-bottom: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 1.1rem; color: var(--oxford-blue-1); font-weight: 700; margin: 0;">
+                        Donor Logins
+                    </h3>
+                    <span class="badge" style="background: #f1f5f9; color: var(--slate-600);" th:text="${#lists.size(donorUsers)} + ' Donors'">0 Donors</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Full Name</th>
+                                <th>Role</th>
+                                <th>Active</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(donorUsers)}">
+                                <td colspan="5" style="text-align: center; color: var(--slate-400); font-size: 0.85rem;">No donor logins yet.</td>
+                            </tr>
+                            <tr th:each="u : ${donorUsers}">
+                                <td>
+                                    <span style="font-weight: 600; color: var(--royal-blue); font-family: monospace; font-size: 0.85rem;" th:text="${u.username}">donor</span>
+                                </td>
+                                <td th:text="${u.fullName}" th:title="${u.fullName}" style="font-size: 0.88rem; white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis;">Donor Name</td>
+                                <td>
+                                    <span class="badge badge-info" style="font-size: 0.75rem;">Donor</span>
+                                </td>
+                                <td>
+                                    <span th:class="${u.active ? 'badge badge-success' : 'badge badge-danger'}"
+                                          th:text="${u.active ? 'Active' : 'Disabled'}" style="font-size: 0.75rem;">Active</span>
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 4px; align-items: center;">
+                                        <a th:href="@{/donor/{id}(id=${u.donorId})}" class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 8px;" title="View donor profile">Profile</a>
+                                        <form th:action="@{'/portal/it/users/' + ${u.id} + '/toggle-status'}" method="post" style="display: inline;">
+                                            <button type="submit" class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;"
+                                                    th:text="${u.active ? 'Disable' : 'Enable'}">
+                                                Toggle
+                                            </button>
+                                        </form>
+                                        <form th:action="@{'/portal/it/users/' + ${u.id} + '/delete'}" method="post" style="display: inline;"
+                                              onsubmit="return confirm('Permanently remove this donor login? (Donor profile stays.)');">
+                                            <button type="submit" class="btn btn-sm" style="font-size: 0.72rem; padding: 2px 6px; color: #dc2626; border: 1px solid #fca5a5; background: #fff;" title="Delete Login">
+                                                🗑️
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        <!-- Edit User Modal -->
+        <div id="itUserEditModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+            <div class="form-card" style="max-width: 480px; width: 100%; margin: 0; padding: 28px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                    <h3 style="font-size: 1.2rem; color: var(--oxford-blue-1); font-weight: 700; margin: 0;">
+                        Edit User Account Profile
+                    </h3>
+                    <button type="button" onclick="closeItUserEditModal()" style="background: none; border: none; font-size: 1.4rem; color: var(--slate-400); cursor: pointer;">&times;</button>
+                </div>
+                <form id="itUserEditForm" method="post" style="display: flex; flex-direction: column; gap: 14px;">
+                    <div>
+                        Username: <strong id="modalEditUsername" style="color: var(--royal-blue); font-family: monospace;"></strong>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" id="editItFullName" name="fullName" required class="form-control">
+                    </div>
+                    <div class="form-grid-2" style="gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Stakeholder Role *</label>
+                            <select id="editItRole" name="role" required class="form-select" onchange="toggleEditHospital()">
+                                <option th:each="r : ${roles}" th:value="${r}" th:text="${r.displayName}"></option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="editHospitalWrap" style="display: none;">
+                            <label class="form-label">Hospital (If Coordinator)</label>
+                            <input type="text" id="editItHospital" name="hospital" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Reset Password (leave blank to keep current)</label>
+                        <input type="password" name="newPassword" placeholder="••••••••" class="form-control">
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeItUserEditModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Audit Log Activity Feed -->
+        <div class="data-table-card">
+            <div style="padding: 20px 24px; border-bottom: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="font-size: 1.2rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 2px;">
+                        System Activity Audit Trail
+                    </h2>
+                    <p style="color: var(--slate-500); font-size: 0.85rem; margin: 0;">Immutable chronological record of administrative actions, authorizations, and data events</p>
+                </div>
+                <span class="badge" style="background: #f1f5f9; color: var(--slate-600);" th:text="${#lists.size(auditLogs)} + ' Events'">0 Events</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 180px;">Timestamp</th>
+                            <th style="width: 140px;">Initiator</th>
+                            <th style="width: 200px;">Action Category</th>
+                            <th>Event Details &amp; Metadata</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(auditLogs)}">
+                            <td colspan="4" style="text-align: center; color: var(--slate-400); padding: 32px;">No activity logs recorded yet.</td>
+                        </tr>
+                        <tr th:each="log : ${auditLogs}">
+                            <td style="font-size: 0.85rem; color: var(--slate-500); white-space: nowrap;">
+                                <div style="font-weight: 600;" th:text="${log.createdAt != null ? #temporals.format(log.createdAt, 'dd MMM yyyy') : '—'}">Date</div>
+                                <small style="font-size: 0.78rem;" th:text="${log.createdAt != null ? #temporals.format(log.createdAt, 'HH:mm:ss') : ''}">--:--:--</small>
+                            </td>
+                            <td>
+                                <span style="font-family: monospace; font-weight: 600; color: var(--oxford-blue-1); font-size: 0.85rem;" th:text="${log.username}">system</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-info" th:text="${log.action}" style="font-size: 0.75rem;">LOGIN</span>
+                            </td>
+                            <td style="font-size: 0.88rem; color: var(--slate-600);" th:text="${log.details}">
+                                User successfully authenticated
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+    // Tick-box scopes → comma CSV into hidden field before submit (backend unchanged)
+    document.querySelectorAll('.perm-form').forEach(form => {
+        form.addEventListener('submit', () => {
+            const checked = Array.from(form.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(cb => cb.value);
+            form.querySelector('input[name="permissions"]').value = checked.join(',');
+        });
+    });
+
+    // Delete branch confirmation and form submission
+    function deleteBranch(branchName) {
+        if (confirm('Delete branch facility "' + branchName + '" permanently?')) {
+            document.getElementById('deleteBranchNameInput').value = branchName;
+            document.getElementById('deleteBranchForm').submit();
+        }
+    }
+
+    function openBranchEditModal(branchName) {
+        document.getElementById('modalBranchOldName').textContent = branchName;
+        document.getElementById('editBranchOldName').value = branchName;
+        document.getElementById('editBranchNewName').value = branchName;
+        document.getElementById('branchEditModal').style.display = 'flex';
+        document.getElementById('editBranchNewName').focus();
+        document.getElementById('editBranchNewName').select();
+    }
+
+    function closeBranchEditModal() {
+        document.getElementById('branchEditModal').style.display = 'none';
+    }
+
+    function openItUserEditModal(btn) {
+        const id = btn.getAttribute('data-id');
+        const username = btn.getAttribute('data-username');
+        const name = btn.getAttribute('data-name');
+        const role = btn.getAttribute('data-role');
+        const hospital = btn.getAttribute('data-hospital') || '';
+
+        document.getElementById('itUserEditForm').action = '/portal/it/users/' + id + '/edit';
+        document.getElementById('modalEditUsername').textContent = username;
+        document.getElementById('editItFullName').value = name;
+        document.getElementById('editItRole').value = role;
+        document.getElementById('editItHospital').value = hospital;
+        toggleEditHospital();
+
+        document.getElementById('itUserEditModal').style.display = 'flex';
+    }
+
+    function toggleEditHospital() {
+        const show = document.getElementById('editItRole').value === 'HOSPITAL_COORDINATOR';
+        document.getElementById('editHospitalWrap').style.display = show ? '' : 'none';
+        if (!show) document.getElementById('editItHospital').value = '';
+    }
+
+    // Hospital field shows only for Hospital Coordinator role
+    function toggleProvisionHospital() {
+        const roleEl = document.getElementById('provisionRole');
+        const wrap = document.getElementById('provisionHospitalWrap');
+        if (!roleEl || !wrap) return;
+        const show = roleEl.value === 'HOSPITAL_COORDINATOR';
+        wrap.style.display = show ? '' : 'none';
+        if (!show) document.getElementById('provisionHospital').value = '';
+    }
+    document.addEventListener('DOMContentLoaded', toggleProvisionHospital);
+
+    function closeItUserEditModal() {
+        document.getElementById('itUserEditModal').style.display = 'none';
+    }
+    </script>
+
+    <!-- Footer -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

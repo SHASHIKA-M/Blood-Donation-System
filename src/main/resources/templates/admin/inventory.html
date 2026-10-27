@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Inventory & QA - Admin')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('admin')}"></header>
+
+    <main class="container wide" style="padding-block: 40px 80px;">
+        <!-- Admin Navigation Bar -->
+        <div th:replace="~{admin/_nav :: adminNav('inventory')}"></div>
+
+        <!-- Alerts -->
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <div class="admin-split" style="display: grid; grid-template-columns: 340px 1fr; gap: 28px;">
+            <!-- Register Blood Unit Card -->
+            <aside>
+                <div class="form-card" style="margin: 0; padding: 24px; border-top: 3px solid var(--crimson);">
+                    <h3 style="font-size: 1.2rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 16px;">
+                        Add Collected Blood Unit
+                    </h3>
+                    <form th:action="@{/admin/inventory}" method="post" th:object="${newUnit}" style="display: flex; flex-direction: column; gap: 14px;">
+                        <div class="form-group">
+                            <label class="form-label">Blood Group *</label>
+                            <select th:field="*{bloodGroup}" required class="form-select">
+                                <option value="">Select Blood Group</option>
+                                <option th:each="g : ${ {'A+','A-','B+','B-','AB+','AB-','O+','O-'} }" th:value="${g}" th:text="${g}"></option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Blood Component *</label>
+                            <select th:field="*{component}" class="form-select">
+                                <option value="Whole Blood">Whole Blood</option>
+                                <option value="Plasma">Fresh Frozen Plasma</option>
+                                <option value="Platelets">Platelets</option>
+                                <option value="Red Cells">Packed Red Cells</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Collection Center / Branch *</label>
+                            <input type="text" th:field="*{branch}" required placeholder="e.g. Colombo Central" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Expiry Date &amp; Time *</label>
+                            <input type="datetime-local" th:field="*{expiresAt}" required class="form-control">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-sm" style="width: 100%; margin-top: 6px;">
+                            Add for QA Screening
+                        </button>
+                    </form>
+                </div>
+            </aside>
+
+            <!-- Stock Overview Table -->
+            <section>
+                <div class="form-card" style="margin: 0; padding: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+                        <h2 style="font-size: 1.35rem; color: var(--oxford-blue-1); font-weight: 800;">
+                            Blood Stock Inventory &amp; QA Verification
+                        </h2>
+                        <form method="get" th:action="@{/admin/inventory}" style="display: flex; gap: 8px;">
+                            <select name="bloodGroup" class="form-select" style="padding: 6px 12px; font-size: 0.85rem;" onchange="this.form.submit()">
+                                <option value="">All Groups</option>
+                                <option th:each="g : ${ {'A+','A-','B+','B-','AB+','AB-','O+','O-'} }" th:value="${g}" th:selected="${g == bloodGroup}" th:text="${g}"></option>
+                            </select>
+                        </form>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(units)}" style="padding: 30px; text-align: center; color: var(--slate-500);">
+                        No blood units in inventory for this filter.
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(units)}" class="table-responsive table-scroll sticky-head">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-center">Group</th>
+                                    <th>Component &amp; Branch</th>
+                                    <th class="col-datetime">Expires</th>
+                                    <th class="col-center">Quality Status</th>
+                                    <th>QA Screening Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="unit : ${units}">
+                                    <td class="td-center"><span class="blood-badge sm" th:text="${unit.bloodGroup}">A+</span></td>
+                                    <td>
+                                        <strong th:text="${unit.component}">Whole Blood</strong><br>
+                                        <small style="color: var(--slate-500);" th:text="${unit.branch}">Branch</small>
+                                    </td>
+                                    <td class="td-datetime"><span class="date date--datetime" th:text="${unit.expiresAt != null ? #temporals.format(unit.expiresAt, 'dd MMM yyyy · HH:mm') : '—'}" th:title="${unit.expiresAt != null ? #temporals.format(unit.expiresAt, 'dd MMM yyyy · HH:mm') : ''}">Date</span></td>
+                                    <td class="td-center">
+                                        <span class="status-badge" 
+                                              th:classappend="${unit.status == 'Approved - Available' ? 'available' : 'unavailable'}" 
+                                              th:text="${unit.status}">Pending Screening</span>
+                                    </td>
+                                    <td>
+                                        <div th:if="${unit.status == 'Pending Screening'}">
+                                            <form th:action="@{/admin/inventory/{id}/screening(id=${unit.id})}" method="post"
+                                                  style="display: flex; flex-direction: column; gap: 6px; font-size: 0.78rem;">
+                                                <span style="font-size: 0.72rem; font-weight: 700; color: var(--slate-500);">Confirm Non-Reactive — tick all 5:</span>
+                                                <div class="screen-grid">
+                                                    <label class="screen-chip" title="HIV 1 &amp; 2 — Non-Reactive"><input type="checkbox" name="hiv" value="true" required> HIV</label>
+                                                    <label class="screen-chip" title="Hepatitis B — Non-Reactive"><input type="checkbox" name="hepB" value="true" required> Hep B</label>
+                                                    <label class="screen-chip" title="Hepatitis C — Non-Reactive"><input type="checkbox" name="hepC" value="true" required> Hep C</label>
+                                                    <label class="screen-chip" title="Syphilis — Non-Reactive"><input type="checkbox" name="syphilis" value="true" required> Syphilis</label>
+                                                    <label class="screen-chip" title="Malaria — Non-Reactive"><input type="checkbox" name="malaria" value="true" required> Malaria</label>
+                                                </div>
+                                                <input name="notes" placeholder="Screening notes..." class="form-control" style="padding: 4px 8px; font-size: 0.75rem;">
+                                                <button type="submit" class="btn btn-blue btn-sm" style="font-size: 0.75rem; padding: 4px 8px;">Verify &amp; Release</button>
+                                            </form>
+                                        </div>
+                                        <div th:unless="${unit.status == 'Pending Screening'}" style="display: flex; gap: 8px; align-items: center; justify-content: space-between;">
+                                            <span style="font-size: 0.85rem; color: var(--success); font-weight: 600;">
+                                                &#10003; <span th:text="${unit.status}">Screened</span>
+                                            </span>
+                                            <form th:unless="${unit.status != null and unit.status.contains('Discarded')}" th:action="@{'/admin/inventory/' + ${unit.id} + '/discard'}" method="post" style="display: inline;" onsubmit="return confirm('Decommission and discard this blood unit?');">
+                                                <button type="submit" class="btn btn-sm" style="font-size: 0.72rem; padding: 2px 6px; color: #dc2626; border: 1px solid #fca5a5; background: #fff;">Discard</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

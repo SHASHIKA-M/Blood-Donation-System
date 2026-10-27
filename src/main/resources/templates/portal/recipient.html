@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Recipient Portal')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('requests')}"></header>
+
+    <main class="container" style="padding-block: 40px 80px;">
+        <div th:replace="~{portal/_nav :: portalNav('recipient')}"></div>
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <div th:replace="~{portal/_hero :: portalHero('/images/photos/nurse-patient.jpg','Recipient / Patient','Recipient & Patient Portal','Submit urgent blood requirements and track request progress across hospital coordination centers.')}"></div>
+
+        <div class="responsive-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 32px;">
+            <!-- Search Blood Availability -->
+            <div class="form-card" style="margin: 0; padding: 24px;">
+                <h2 style="font-size: 1.25rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 14px;">
+                    Search Available Blood Stock
+                </h2>
+                <form method="get" th:action="@{/portal/recipient}" style="display: flex; gap: 10px; margin-bottom: 18px;">
+                    <select name="bloodGroup" class="form-select" style="flex: 1;">
+                        <option value="">All Blood Groups</option>
+                        <option th:each="g : ${ {'A+','A-','B+','B-','AB+','AB-','O+','O-'} }" th:value="${g}" th:selected="${g == bloodGroup}" th:text="${g}"></option>
+                    </select>
+                    <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+                </form>
+
+                <div class="table-responsive table-scroll sticky-head">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="col-center">Group</th>
+                                <th>Component</th>
+                                <th>Branch</th>
+                                <th class="col-date">Expires</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(units)}">
+                                <td colspan="4" style="text-align: center; color: var(--slate-400); padding: 20px;">No matching stock available.</td>
+                            </tr>
+                            <tr th:each="u : ${units}">
+                                <td class="td-center"><span class="blood-badge sm" th:text="${u.bloodGroup}">O+</span></td>
+                                <td th:text="${u.component}">Whole Blood</td>
+                                <td th:text="${u.branch}">Colombo</td>
+                                <td class="td-date"><span class="date date--date" th:text="${u.expiresAt != null ? #temporals.format(u.expiresAt, 'dd MMM yyyy') : '—'}" th:title="${u.expiresAt != null ? #temporals.format(u.expiresAt, 'dd MMM yyyy') : ''}">Date</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Submit Urgent Blood Request -->
+            <div class="form-card" style="margin: 0; padding: 24px; border-top: 3px solid var(--crimson);">
+                <h2 style="font-size: 1.25rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 14px;">
+                    Submit Urgent Blood Request
+                </h2>
+                <form th:action="@{/portal/recipient/request}" method="post" th:object="${newRequest}" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div class="form-group">
+                        <label class="form-label">Patient Name *</label>
+                        <input th:field="*{patientName}" required placeholder="Patient full name" class="form-control">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group">
+                            <label class="form-label">Blood Group *</label>
+                            <select th:field="*{bloodGroup}" required class="form-select">
+                                <option th:each="g : ${ {'A+','A-','B+','B-','AB+','AB-','O+','O-'} }" th:value="${g}" th:text="${g}"></option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Component</label>
+                            <select th:field="*{component}" class="form-select">
+                                <option value="Whole Blood">Whole Blood</option>
+                                <option value="Plasma">Plasma</option>
+                                <option value="Platelets">Platelets</option>
+                                <option value="Red Cells">Red Cells</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group">
+                            <label class="form-label">Units Needed *</label>
+                            <input type="number" th:field="*{units}" min="1" value="1" required class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Needed By *</label>
+                            <input type="datetime-local" name="neededByDate" required class="form-control" 
+                                   th:value="${#temporals.format(#temporals.createNow().plusDays(1), 'yyyy-MM-dd') + 'T12:00'}">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group">
+                            <label class="form-label">City *</label>
+                            <input th:field="*{city}" required placeholder="e.g. Colombo" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Hospital *</label>
+                            <input th:field="*{hospital}" required placeholder="e.g. Apollo Hospital" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Contact Phone *</label>
+                        <input th:field="*{contactPhone}" required placeholder="e.g. 077XXXXXXX" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Medical Case Notes</label>
+                        <textarea th:field="*{notes}" rows="2" placeholder="Condition or urgency notes..." class="form-control"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="margin-top: 4px;">Submit Blood Request</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Track My Requests Table -->
+        <div class="form-card" style="margin: 0; padding: 24px;">
+            <h2 style="font-size: 1.25rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 14px;">
+                Track Request Status
+            </h2>
+            <div class="table-responsive table-scroll sticky-head">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Patient Name</th>
+                            <th class="col-center">Group</th>
+                            <th class="col-center">Units</th>
+                            <th class="col-center">Status</th>
+                            <th class="col-datetime">Needed By</th>
+                            <th class="col-actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(myRequests)}">
+                            <td colspan="7" style="text-align: center; color: var(--slate-400); padding: 20px;">No requests submitted yet.</td>
+                        </tr>
+                        <tr th:each="r : ${myRequests}">
+                            <td class="td-id"><code th:text="${#strings.substring(r.id,0,8) + '...'}">ID</code></td>
+                            <td><strong th:text="${r.patientName}">Patient</strong></td>
+                            <td class="td-center"><span class="blood-badge sm" th:text="${r.bloodGroup}">O+</span></td>
+                            <td class="td-center" th:text="${r.units}">1</td>
+                            <td class="td-center">
+                                <span class="status-badge" th:classappend="${#strings.equalsIgnoreCase(r.status, 'Delivered') ? 'available' : 'unavailable'}" th:text="${r.status}">Pending</span>
+                            </td>
+                            <td class="td-datetime"><span class="date date--datetime" th:text="${r.neededBy != null ? #temporals.format(r.neededBy, 'dd MMM yyyy · HH:mm') : '—'}" th:title="${r.neededBy != null ? #temporals.format(r.neededBy, 'dd MMM yyyy · HH:mm') : ''}">Date</span></td>
+                            <td class="td-actions">
+                                <div th:if="${!#strings.equalsIgnoreCase(r.status, 'Delivered')}" style="display: flex; gap: 6px; align-items: center;">
+                                    <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 3px 8px;"
+                                            th:data-id="${r.id}"
+                                            th:data-patient="${r.patientName}"
+                                            th:data-units="${r.units}"
+                                            th:data-date="${r.neededBy != null ? #temporals.format(r.neededBy, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                                            th:data-phone="${r.contactPhone}"
+                                            th:data-notes="${r.notes}"
+                                            onclick="openRecipientEditModal(this)">
+                                        ✏️ Edit
+                                    </button>
+                                    <form th:action="@{'/portal/recipient/request/' + ${r.id} + '/delete'}" method="post" style="display: inline;"
+                                          onsubmit="return confirm('Are you sure you want to cancel and delete this blood request?');">
+                                        <button type="submit" class="btn btn-sm" style="font-size: 0.78rem; padding: 3px 8px; color: #dc2626; border: 1px solid #fca5a5; background: #fff;">
+                                            🗑️ Cancel
+                                        </button>
+                                    </form>
+                                </div>
+                                <span th:if="${#strings.equalsIgnoreCase(r.status, 'Delivered')}" style="font-size: 0.8rem; color: var(--success); font-weight: 600;">Completed</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Edit Request Modal -->
+        <div id="recipientEditModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+            <div class="form-card" style="max-width: 480px; width: 100%; margin: 0; padding: 28px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                    <h3 style="font-size: 1.2rem; color: var(--oxford-blue-1); font-weight: 700; margin: 0;">
+                        Edit Blood Request
+                    </h3>
+                    <button type="button" onclick="closeRecipientEditModal()" style="background: none; border: none; font-size: 1.4rem; color: var(--slate-400); cursor: pointer;">&times;</button>
+                </div>
+                <form id="recipientEditForm" method="post" style="display: flex; flex-direction: column; gap: 14px;">
+                    <div>
+                        <strong id="modalPatientName" style="color: var(--royal-blue); font-size: 0.95rem;"></strong>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Units Needed *</label>
+                            <input type="number" id="editUnits" name="units" min="1" required class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contact Phone *</label>
+                            <input type="text" id="editPhone" name="contactPhone" required class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Needed By Date &amp; Time *</label>
+                        <input type="datetime-local" id="editNeededBy" name="neededByDate" required class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Medical Case Notes</label>
+                        <textarea id="editNotes" name="notes" rows="2" class="form-control"></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeRecipientEditModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function openRecipientEditModal(btn) {
+            const id = btn.getAttribute('data-id');
+            const patient = btn.getAttribute('data-patient');
+            const units = btn.getAttribute('data-units');
+            const date = btn.getAttribute('data-date');
+            const phone = btn.getAttribute('data-phone');
+            const notes = btn.getAttribute('data-notes') || '';
+
+            document.getElementById('recipientEditForm').action = '/portal/recipient/request/' + id + '/edit';
+            document.getElementById('modalPatientName').textContent = 'Patient: ' + patient;
+            document.getElementById('editUnits').value = units;
+            document.getElementById('editPhone').value = phone;
+            document.getElementById('editNeededBy').value = date;
+            document.getElementById('editNotes').value = notes;
+
+            const modal = document.getElementById('recipientEditModal');
+            modal.style.display = 'flex';
+        }
+
+        function closeRecipientEditModal() {
+            document.getElementById('recipientEditModal').style.display = 'none';
+        }
+    </script>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

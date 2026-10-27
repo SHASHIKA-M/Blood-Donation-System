@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('About Us')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('about')}"></header>
+
+    <!-- Header Hero Banner -->
+    <section class="search-header-hero hero-photo hero-photo--about">
+        <div class="container">
+            <p class="section-subtitle" style="color: var(--carolina-blue); justify-content: center;">Our Mission &amp; Community</p>
+            <h1>About BloodDonation.lk</h1>
+            <p style="color: #cbd5e1; max-width: 600px; margin: 0 auto; font-size: 1rem;">
+                Bridging the gap between blood donors and recipients across Sri Lanka to ensure no patient goes without life-saving blood.
+            </p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container" style="padding-bottom: 80px;">
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <!-- Section 1: Story & Mission -->
+        <div class="about-grid" style="margin-top: 40px; margin-bottom: 60px;">
+            <figure class="about-banner photo about-photo">
+                <img th:src="@{/images/photos/donor-arm-bags.jpg}" alt="A blood donor giving blood while a collection bag fills at a donation centre" width="520" height="460" loading="lazy" decoding="async">
+                <figcaption class="photo-tag">Voluntary donors power every unit we bank</figcaption>
+            </figure>
+
+            <div>
+                <p class="section-subtitle">Who We Are</p>
+                <h2 class="section-title">Dedicated to Saving Lives in Sri Lanka</h2>
+                <p class="hero-text" style="font-size: 1.05rem; line-height: 1.8; margin-bottom: 20px;">
+                    Are you in need of blood or looking to make a life-saving donation in Sri Lanka? Our Blood Donation Finder platform is here to connect voluntary donors directly with patients, coordinators, and certified hospital blood banks.
+                </p>
+                <p style="color: var(--slate-600); line-height: 1.8; margin-bottom: 24px;">
+                    Blood cannot be manufactured synthetically; it only comes from generous voluntary donors. Through intuitive digital tools, real-time availability tracking, and emergency alert broadcasting, our platform eliminates critical delays when time matters most.
+                </p>
+
+                <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+                    <a th:href="@{/register}" class="btn btn-primary">Become a Donor</a>
+                    <a th:href="@{/search}" class="btn btn-secondary">Find Nearby Donors</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Key Features Grid -->
+        <section style="margin-bottom: 60px;">
+            <p class="section-subtitle text-center">Core Pillars</p>
+            <h2 class="section-title text-center">How BloodDonation.lk Empowers Communities</h2>
+
+            <div class="eligibility-cards-grid" style="margin-top: 36px;">
+                <div class="eligibility-card">
+                    <div class="eligibility-icon-wrap">
+                        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                    </div>
+                    <h3 class="eligibility-title">Easy Search</h3>
+                    <p class="eligibility-desc">Filter donors by exact blood type, district, and province with instant access to available coordinators.</p>
+                </div>
+
+                <div class="eligibility-card">
+                    <div class="eligibility-icon-wrap" style="background:#fee2e2;color:#dc2626;">
+                        <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                    </div>
+                    <h3 class="eligibility-title">Urgent Requests</h3>
+                    <p class="eligibility-desc">Hospital and patient families post critical requirements with verified unit counts and required deadlines.</p>
+                </div>
+
+                <div class="eligibility-card">
+                    <div class="eligibility-icon-wrap" style="background:#dcfce7;color:#16a34a;">
+                        <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+                    </div>
+                    <h3 class="eligibility-title">Donor Registration</h3>
+                    <p class="eligibility-desc">Register your availability, specify preferred weekly hours, and keep an active log of your donation history.</p>
+                </div>
+
+                <div class="eligibility-card">
+                    <div class="eligibility-icon-wrap" style="background:#e0f2fe;color:#0284c7;">
+                        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                    </div>
+                    <h3 class="eligibility-title">Community Support</h3>
+                    <p class="eligibility-desc">Connecting grassroots volunteers, hospital coordinators, QA officers, and delivery couriers in one platform.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Photo strip: real donor & team photography -->
+        <section style="margin-bottom: 60px;" aria-label="Blood donation in action">
+            <p class="section-subtitle text-center">In Action</p>
+            <h2 class="section-title text-center">Real Donors, Real Centres, Real Impact</h2>
+            <div class="photo-strip">
+                <figure class="photo">
+                    <img th:src="@{/images/photos/donor-event.jpg}" alt="A volunteer donating blood at an outdoor community donation event" width="640" height="480" loading="lazy" decoding="async">
+                    <figcaption class="photo-tag">Mobile donor drives</figcaption>
+                </figure>
+                <figure class="photo">
+                    <img th:src="@{/images/photos/medical-team.jpg}" alt="A team of medical professionals in white coats standing together" width="640" height="480" loading="lazy" decoding="async">
+                    <figcaption class="photo-tag">Clinical &amp; QA teams</figcaption>
+                </figure>
+                <figure class="photo">
+                    <img th:src="@{/images/photos/volunteers.jpg}" alt="A healthcare worker standing with community volunteers" width="640" height="480" loading="lazy" decoding="async">
+                    <figcaption class="photo-tag">Volunteer network</figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <!-- CTA Callout -->
+        <div class="schedule-box" style="max-width: 100%; justify-content: space-between; padding: 24px 32px; background: var(--oxford-blue-1); border-radius: var(--radius-lg); flex-wrap: wrap; gap: 20px;">
+            <div style="display: flex; align-items: center; gap: 18px;">
+                <div class="schedule-icon" style="width: 52px; height: 52px;">
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                </div>
+                <div>
+                    <h3 style="color: var(--white); font-size: 1.25rem; font-weight: 700;">Are you ready to make a life-saving impact?</h3>
+                    <p style="color: #94a3b8; font-size: 0.92rem; margin-top: 2px;">Your donation takes less than 30 minutes and can save up to three lives.</p>
+                </div>
+            </div>
+            <a th:href="@{/register}" class="btn btn-primary">Register as Donor Now</a>
+        </div>
+    </main>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

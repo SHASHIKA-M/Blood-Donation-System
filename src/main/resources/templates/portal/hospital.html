@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Hospital Coordinator Portal')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('requests')}"></header>
+
+    <main class="container wide" style="padding-block: 40px 80px;">
+        <div th:replace="~{portal/_nav :: portalNav('hospital')}"></div>
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <div th:replace="~{portal/_hero :: portalHero('/images/photos/hospital-care.jpg','Hospital Coordination','Hospital Coordinator Portal','Submit clinical requisitions, check real-time blood bank availability, and coordinate cold-chain delivery.')}"></div>
+        <div style="margin:-12px 0 20px 0;font-size:.88rem;color:var(--slate-600);">
+            Hospital: <strong style="color:var(--crimson);" th:text="${user.hospital}">Hospital</strong>
+        </div>
+
+        <div class="form-card" style="margin: 0 0 32px 0; padding: 28px; border-top: 3px solid var(--royal-blue);">
+            <h2 style="font-size: 1.3rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 16px;">
+                New Hospital Requisition
+            </h2>
+
+            <form th:action="@{/portal/hospital/requisition}" method="post" th:object="${newRequisition}" id="reqForm">
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Patient / Ward Reference *</label>
+                    <input th:field="*{patientName}" required placeholder="e.g. Ward 4B, Emergency Admissions" class="form-control">
+                </div>
+
+                <div class="form-grid-3" style="margin-bottom: 14px;">
+                    <div class="form-group">
+                        <label class="form-label">Blood Group *</label>
+                        <select th:field="*{bloodGroup}" id="bg" required onchange="checkAvail()" class="form-select">
+                            <option th:each="g : ${ {'A+','A-','B+','B-','AB+','AB-','O+','O-'} }" th:value="${g}" th:text="${g}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Component *</label>
+                        <select th:field="*{component}" id="comp" onchange="checkAvail()" class="form-select">
+                            <option value="Whole Blood">Whole Blood</option>
+                            <option value="Plasma">Fresh Frozen Plasma</option>
+                            <option value="Platelets">Platelets</option>
+                            <option value="Red Cells">Packed Red Cells</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Units Needed *</label>
+                        <input type="number" th:field="*{units}" min="1" value="1" required class="form-control">
+                    </div>
+                </div>
+
+                <!-- Real-time availability indicator badge -->
+                <div id="availResult" style="padding: 12px 16px; background: #e0f2fe; color: #0369a1; border-radius: var(--radius-sm); margin-bottom: 16px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    <span>Checking availability...</span>
+                </div>
+
+                <div class="form-grid-2" style="margin-bottom: 14px;">
+                    <div class="form-group">
+                        <label class="form-label">Urgency Level</label>
+                        <select th:field="*{urgency}" class="form-select">
+                            <option value="Routine">Routine (Elective surgery / next day)</option>
+                            <option value="Urgent">Urgent (Within 6 hours)</option>
+                            <option value="Emergency">Emergency (Immediate dispatch)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Needed By Date &amp; Time *</label>
+                        <input type="datetime-local" name="neededByDate" required class="form-control"
+                               th:value="${#temporals.format(#temporals.createNow().plusDays(1), 'yyyy-MM-dd') + 'T12:00'}">
+                    </div>
+                </div>
+
+                <div class="form-grid-2" style="margin-bottom: 14px;">
+                    <div class="form-group">
+                        <label class="form-label">City *</label>
+                        <input th:field="*{city}" value="Colombo" required class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Contact Phone *</label>
+                        <input th:field="*{contactPhone}" required placeholder="Coordinator direct mobile" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label">Clinical Notes</label>
+                    <textarea th:field="*{notes}" rows="2" placeholder="Operating theater, surgeon in charge, or crossmatch details..." class="form-control"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg">Submit Hospital Requisition</button>
+            </form>
+        </div>
+
+        <!-- Requisitions & Dispatch Tracking -->
+        <div class="form-card" style="margin: 0; padding: 24px;">
+            <h2 style="font-size: 1.3rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 16px;">
+                Hospital Requisitions &amp; Dispatch Tracking
+            </h2>
+
+            <div class="table-responsive table-scroll sticky-head">
+                <table class="data-table compact">
+                    <thead>
+                        <tr>
+                            <th>Requisition ID</th>
+                            <th>Patient / Reference</th>
+                            <th class="col-center">Blood Group</th>
+                            <th class="col-center">Units</th>
+                            <th class="col-center">Status</th>
+                            <th class="col-center">Urgency</th>
+                            <th class="col-datetime">Needed By</th>
+                            <th class="col-actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(requisitions)}">
+                            <td colspan="8" style="text-align: center; color: var(--slate-400); padding: 20px;">No requisitions logged yet.</td>
+                        </tr>
+                        <tr th:each="r : ${requisitions}">
+                            <td class="td-id"><code th:text="${#strings.substring(r.id, 0, 8) + '...'}">ID</code></td>
+                            <td><strong th:text="${r.patientName}" th:title="${r.patientName}" style="display: inline-block; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;">Ref</strong></td>
+                            <td class="td-center"><span class="blood-badge sm" th:text="${r.bloodGroup}">O+</span></td>
+                            <td th:text="${r.units} + ' bag(s)'" style="white-space: nowrap;" class="td-center">2</td>
+                            <td class="td-center">
+                                <span class="status-badge" th:classappend="${#strings.equalsIgnoreCase(r.status, 'Delivered') ? 'available' : 'unavailable'}" th:text="${r.status}">Submitted</span>
+                            </td>
+                            <td class="td-center">
+                                <span class="urgency-pill" th:classappend="${#strings.equalsIgnoreCase(r.urgency, 'Emergency') ? 'urgent' : 'normal'}" th:text="${r.urgency}">Urgent</span>
+                            </td>
+                            <td class="td-datetime"><span class="date date--datetime" th:text="${r.neededBy != null ? #temporals.format(r.neededBy, 'dd MMM yyyy · HH:mm') : '—'}" th:title="${r.neededBy != null ? #temporals.format(r.neededBy, 'dd MMM yyyy · HH:mm') : ''}">Date</span></td>
+                            <td class="td-actions" style="white-space: nowrap;">
+                                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: nowrap;">
+                                    <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 3px 8px;"
+                                            th:data-id="${r.id}"
+                                            th:data-patient="${r.patientName}"
+                                            th:data-units="${r.units}"
+                                            th:data-urgency="${r.urgency}"
+                                            th:data-date="${r.neededBy != null ? #temporals.format(r.neededBy, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                                            th:data-phone="${r.contactPhone}"
+                                            th:data-notes="${r.notes}"
+                                            onclick="openHospitalEditModal(this)">
+                                        ✏️ Edit
+                                    </button>
+                                    <form th:action="@{'/portal/hospital/requisition/' + ${r.id} + '/delete'}" method="post" style="display: inline;"
+                                          onsubmit="return confirm('Cancel and remove this hospital requisition?');">
+                                        <button type="submit" class="btn btn-sm" style="font-size: 0.78rem; padding: 3px 8px; color: #dc2626; border: 1px solid #fca5a5; background: #fff;">
+                                            🗑️ Cancel
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Edit Hospital Requisition Modal -->
+        <div id="hospitalEditModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+            <div class="form-card" style="max-width: 480px; width: 100%; margin: 0; padding: 28px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                    <h3 style="font-size: 1.2rem; color: var(--oxford-blue-1); font-weight: 700; margin: 0;">
+                        Edit Hospital Requisition
+                    </h3>
+                    <button type="button" onclick="closeHospitalEditModal()" style="background: none; border: none; font-size: 1.4rem; color: var(--slate-400); cursor: pointer;">&times;</button>
+                </div>
+                <form id="hospitalEditForm" method="post" style="display: flex; flex-direction: column; gap: 14px;">
+                    <div>
+                        <strong id="modalHospPatient" style="color: var(--royal-blue); font-size: 0.95rem;"></strong>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Units Needed *</label>
+                            <input type="number" id="editHospUnits" name="units" min="1" required class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Urgency Level</label>
+                            <select id="editHospUrgency" name="urgency" class="form-select">
+                                <option value="Routine">Routine</option>
+                                <option value="Urgent">Urgent</option>
+                                <option value="Emergency">Emergency</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Needed By *</label>
+                            <input type="datetime-local" id="editHospNeededBy" name="neededByDate" required class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contact Phone *</label>
+                            <input type="text" id="editHospPhone" name="contactPhone" required class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Clinical Notes</label>
+                        <textarea id="editHospNotes" name="notes" rows="2" class="form-control"></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeHospitalEditModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Requisition</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+    function checkAvail(){
+        const bg = document.getElementById('bg').value;
+        const comp = document.getElementById('comp').value;
+        const resultEl = document.getElementById('availResult');
+        // NOTE: blood groups contain "+" (A+, B+, AB+, O+) — must be URL-encoded,
+        // otherwise "+" decodes to a space on the server ("A " instead of "A+") and the DB count returns 0.
+        fetch('/portal/hospital/check-availability?bloodGroup=' + encodeURIComponent(bg) + '&component=' + encodeURIComponent(comp))
+            .then(r => r.text())
+            .then(t => {
+                const count = parseInt(t, 10);
+                const ok = !isNaN(count) && count > 0;
+                resultEl.style.background = ok ? '#f0fdf4' : '#fef2f2';
+                resultEl.style.color = ok ? '#15803d' : '#b91c1c';
+                resultEl.style.border = ok ? '1px solid #86efac' : '1px solid #fca5a5';
+                resultEl.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> <span>Live Availability: ${t}${ok ? ' — stock available ✓' : ' — out of stock for this selection'}</span>`;
+            })
+            .catch(() => {
+                resultEl.innerHTML = `<span>Availability check failed — please retry.</span>`;
+            });
+    }
+    document.addEventListener('DOMContentLoaded', checkAvail);
+
+    function openHospitalEditModal(btn) {
+        const id = btn.getAttribute('data-id');
+        const patient = btn.getAttribute('data-patient');
+        const units = btn.getAttribute('data-units');
+        const urgency = btn.getAttribute('data-urgency');
+        const date = btn.getAttribute('data-date');
+        const phone = btn.getAttribute('data-phone');
+        const notes = btn.getAttribute('data-notes') || '';
+
+        document.getElementById('hospitalEditForm').action = '/portal/hospital/requisition/' + id + '/edit';
+        document.getElementById('modalHospPatient').textContent = 'Reference: ' + patient;
+        document.getElementById('editHospUnits').value = units;
+        document.getElementById('editHospUrgency').value = urgency;
+        document.getElementById('editHospPhone').value = phone;
+        document.getElementById('editHospNeededBy').value = date;
+        document.getElementById('editHospNotes').value = notes;
+
+        document.getElementById('hospitalEditModal').style.display = 'flex';
+    }
+
+    function closeHospitalEditModal() {
+        document.getElementById('hospitalEditModal').style.display = 'none';
+    }
+    </script>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

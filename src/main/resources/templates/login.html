@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Portal Login')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('login')}"></header>
+
+    <!-- Main Login Container -->
+    <main class="login-hero">
+        <div class="login-split">
+            <figure class="login-split-media">
+                <img th:src="@{/images/photos/nurse-donor.jpg}" alt="A healthcare professional attending to a blood donor during collection" width="700" height="800" fetchpriority="high" decoding="async">
+                <div class="login-split-caption">
+                    <span class="photo-tag">Donor &amp; staff portal</span>
+                    <h2>Every Login Moves A Unit Closer To A Patient</h2>
+                    <p>Donors, hospitals, QA officers and couriers coordinate the journey of every unit — from your arm to a patient's bedside.</p>
+                </div>
+            </figure>
+            <div class="login-split-body">
+        <div class="form-card" style="max-width: 480px; width: 100%; padding: 40px 32px; box-shadow: var(--shadow-card);">
+            <!-- Card Brand Header -->
+            <div style="text-align: center; margin-bottom: 28px;">
+                <img th:src="@{/images/logo.svg}" alt="BloodDonation.lk" style="height: 44px; margin: 0 auto 12px auto;">
+                <h1 style="font-size: 1.6rem; color: var(--oxford-blue-1); font-weight: 800;">Welcome Back</h1>
+            </div>
+
+            <!-- Alerts -->
+            <div th:replace="~{layout :: alerts}"></div>
+
+            <!-- Login Form -->
+            <form th:action="@{/login}" method="post">
+                <div class="form-group" style="margin-bottom: 18px;">
+                    <label for="login-username" class="form-label">Username</label>
+                    <input type="text" id="login-username" name="username" required placeholder="Enter your username..." class="form-control" autocomplete="username">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label for="login-password" class="form-label">Password</label>
+                    <input type="password" id="login-password" name="password" required placeholder="Enter password..." class="form-control" autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                    Sign In to Portal
+                </button>
+            </form>
+
+            <p style="text-align: center; font-size: 0.83rem; color: var(--slate-500); margin-top: 14px;">
+                Registered donor? Log in with your <strong>name</strong> as username and your <strong>phone number</strong> as password.
+            </p>
+
+            <!-- Demo Stakeholder Roles Quick-Fill -->
+            <div style="margin-top: 28px; padding: 18px; background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-md);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--oxford-blue-1);">Demo Role Accounts</span>
+                    <span style="font-size: 0.78rem; color: var(--slate-400);">(Password: <code>pass123</code>)</span>
+                </div>
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;" onclick="fillLogin('recipient', 'pass123')">
+                        Recipient
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;" onclick="fillLogin('hospital', 'pass123')">
+                        Hospital
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;" onclick="fillLogin('qa', 'pass123')">
+                        QA Officer
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;" onclick="fillLogin('delivery', 'pass123')">
+                        Delivery
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;" onclick="fillLogin('manager', 'pass123')">
+                        Manager
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;" onclick="fillLogin('itadmin', 'pass123')">
+                        IT Admin
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer links -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; font-size: 0.88rem; color: var(--slate-500);">
+                <a th:href="@{/}" style="color: var(--royal-blue);">&larr; Back to Home</a>
+                <a th:href="@{/register}" style="color: var(--crimson); font-weight: 600;">Register as Donor &rarr;</a>
+            </div>
+        </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function fillLogin(user, pass) {
+            document.getElementById('login-username').value = user;
+            document.getElementById('login-password').value = pass;
+        }
+    </script>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

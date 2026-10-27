@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="portalNav(active)" class="portal-bar" th:with="u=${user != null ? user : session.currentUser}">
+    <div style="display: flex; align-items: center; gap: 8px; margin-right: 12px;" th:if="${u != null}">
+        <span class="blood-badge sm" style="width: 32px; height: 32px; font-size: 0.85rem;">🏥</span>
+        <span class="portal-title" th:text="${u.fullName} + ' (' + ${u.role.displayName} + ')'">User (Role)</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 8px;" th:if="${u != null}">
+        <a th:if="${u.donorId != null}" th:href="@{/portal/donor}" class="btn btn-sm" th:classappend="${active == 'donor' ? 'btn-primary' : 'btn-secondary'}">My Profile</a>
+        <a th:if="${u.donorId == null and u.role.name() == 'RECIPIENT'}" th:href="@{/portal/recipient}" class="btn btn-sm" th:classappend="${active == 'recipient' ? 'btn-primary' : 'btn-secondary'}">Recipient Portal</a>
+        <a th:if="${u.role.name() == 'HOSPITAL_COORDINATOR'}" th:href="@{/portal/hospital}" class="btn btn-sm" th:classappend="${active == 'hospital' ? 'btn-primary' : 'btn-secondary'}">Hospital Portal</a>
+        <a th:if="${u.role.name() == 'QA_OFFICER'}" th:href="@{/portal/qa}" class="btn btn-sm" th:classappend="${active == 'qa' ? 'btn-primary' : 'btn-secondary'}">QA Screening</a>
+        <a th:if="${u.role.name() == 'DELIVERY_OFFICER'}" th:href="@{/portal/delivery}" class="btn btn-sm" th:classappend="${active == 'delivery' ? 'btn-primary' : 'btn-secondary'}">Deliveries</a>
+        <a th:if="${u.role.name() == 'BLOOD_BANK_MANAGER'}" th:href="@{/portal/manager}" class="btn btn-sm" th:classappend="${active == 'manager' ? 'btn-primary' : 'btn-secondary'}">Stock Dashboard</a>
+        <a th:if="${u.role.name() == 'IT_ADMIN'}" th:href="@{/portal/it}" class="btn btn-sm" th:classappend="${active == 'it' ? 'btn-primary' : 'btn-secondary'}">IT Console</a>
+        <a th:if="${u.role.name() == 'IT_ADMIN' or @authService.hasAnyAdminPermission(u.role)}" th:href="@{${@authService.getFirstAllowedAdminPath(u.role)}}" class="btn btn-sm" th:classappend="${active == 'admin' ? 'btn-primary' : 'btn-secondary'}">Admin Console</a>
+    </div>
+
+    <a th:href="@{/availability}" class="btn btn-secondary btn-sm" style="margin-left: auto;">Public Stock</a>
+    <a th:href="@{/logout}" class="btn btn-secondary btn-sm" style="color: var(--crimson); border-color: #fca5a5;">Sign Out</a>
+</div>
+</body>
+</html>

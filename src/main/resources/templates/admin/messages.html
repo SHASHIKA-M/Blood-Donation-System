@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Manage Messages - Admin')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('admin')}"></header>
+
+    <main class="container wide" style="padding-block: 40px 80px;">
+        <!-- Admin Navigation Bar -->
+        <div th:replace="~{admin/_nav :: adminNav('messages')}"></div>
+
+        <!-- Alerts -->
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <!-- Messages Card -->
+        <div class="form-card" style="margin: 0; padding: 28px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <h2 style="font-size: 1.35rem; color: var(--oxford-blue-1); font-weight: 800;">Public Inquiries &amp; Messages</h2>
+                    <p style="color: var(--slate-500); font-size: 0.9rem;">Direct messages submitted via the Contact Us form.</p>
+                </div>
+                <span class="status-badge available" th:text="${#lists.size(messages)} + ' Messages Total'">0 Total</span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(messages)}" style="padding: 40px; text-align: center; color: var(--slate-500);">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="#cbd5e1" style="margin: 0 auto 12px auto;"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                <p>No messages received yet.</p>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(messages)}" class="table-responsive table-scroll sticky-head">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Sender Details</th>
+                            <th>Subject</th>
+                            <th>Message</th>
+                            <th class="col-datetime">Date</th>
+                            <th class="col-center">Status</th>
+                            <th class="col-actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="msg : ${messages}">
+                            <td class="td-id">
+                                <strong th:text="${msg.name}">Kasun</strong><br>
+                                <a th:href="'mailto:' + ${msg.email}" style="color: var(--royal-blue); font-size: 0.85rem; word-break: break-all;" th:text="${msg.email}">email@domain</a>
+                            </td>
+                            <td>
+                                <strong th:text="${msg.subject}">Blood Camp</strong>
+                            </td>
+                            <td class="td-msg">
+                                <p style="font-size: 0.88rem; color: var(--slate-700); line-height: 1.5; margin: 0;" th:text="${msg.message}">Message</p>
+                            </td>
+                            <td class="td-datetime"><span class="date date--datetime" th:text="${msg.createdAt != null ? #temporals.format(msg.createdAt, 'dd MMM yyyy · HH:mm') : '—'}" th:title="${msg.createdAt != null ? #temporals.format(msg.createdAt, 'dd MMM yyyy · HH:mm') : ''}">Date</span></td>
+                            <td class="td-center">
+                                <span class="status-badge" th:classappend="${msg.status == 'read' ? 'available' : 'unavailable'}" th:text="${msg.status}">read</span>
+                            </td>
+                            <td class="td-actions">
+                                <div style="display: flex; gap: 6px;">
+                                    <form th:if="${msg.status == 'unread'}" th:action="@{/admin/messages/{id}/read(id=${msg.id})}" method="post">
+                                        <button type="submit" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;">Mark Read</button>
+                                    </form>
+                                    <form th:action="@{/admin/messages/{id}/delete(id=${msg.id})}" method="post" onsubmit="return confirm('Delete this message?');">
+                                        <button type="submit" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px; color: var(--crimson); border-color: #fca5a5;">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

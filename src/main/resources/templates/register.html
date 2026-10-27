@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Donor Registration')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('register')}"></header>
+
+    <!-- Header Hero Banner -->
+    <section class="search-header-hero hero-photo hero-photo--register">
+        <div class="container">
+            <p class="section-subtitle" style="color: var(--carolina-blue); justify-content: center;">Save Lives &bull; Sri Lanka</p>
+            <h1>Register as a Blood Donor</h1>
+            <p style="color: #cbd5e1; max-width: 600px; margin: 0 auto; font-size: 1rem;">
+                Join our nationwide network of voluntary lifesavers. Your details help emergency coordinators connect with you when your blood type is required.
+            </p>
+        </div>
+    </section>
+
+    <!-- Registration Form Main -->
+    <main class="container" style="padding-bottom: 80px;">
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <div class="form-card" style="margin-top: -30px; position: relative; z-index: 10;">
+            <div class="photo card-photo-head">
+                <img th:src="@{/images/photos/donor-event.jpg}" alt="A volunteer donating blood at an outdoor community blood drive" width="1200" height="525" loading="lazy" decoding="async">
+                <span class="photo-tag">Join thousands of registered voluntary donors</span>
+            </div>
+            <div style="text-align: center; margin-bottom: 30px;">
+                <img th:src="@{/images/blood-icon.svg}" alt="Blood Icon" width="48" height="48" style="margin: 0 auto 10px auto;">
+                <h2 style="font-size: 1.8rem; color: var(--oxford-blue-1); font-weight: 800;">Register Now</h2>
+                <p style="color: var(--slate-500); font-size: 0.95rem;">
+                    Please fill out the donor questionnaire below. All information is securely maintained.
+                </p>
+            </div>
+
+            <form th:action="@{/register}" method="post" th:object="${donor}">
+                <!-- Section 1: Basic Information -->
+                <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); border-bottom: 2px solid var(--slate-100); padding-bottom: 8px; margin-bottom: 20px;">
+                    1. Personal Details
+                </h3>
+
+                <div class="form-grid-2" style="margin-bottom: 18px;">
+                    <div class="form-group">
+                        <label for="donor-name" class="form-label">Full Name *</label>
+                        <input type="text" id="donor-name" th:field="*{name}" required placeholder="e.g. Aman Silva" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="donor-phone" class="form-label">Phone Number *</label>
+                        <input type="tel" id="donor-phone" th:field="*{phone}" required placeholder="e.g. 0771234567" oninput="formatPhoneNumber(this)" class="form-control">
+                        <small style="color: var(--slate-400); font-size: 0.8rem;">Sri Lankan mobile number (e.g., 077XXXXXXX)</small>
+                    </div>
+                </div>
+
+                <!-- Section 2: Blood Type & Location -->
+                <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); border-bottom: 2px solid var(--slate-100); padding-bottom: 8px; margin-bottom: 20px; margin-top: 30px;">
+                    2. Blood Group &amp; Region
+                </h3>
+
+                <div class="form-grid-3" style="margin-bottom: 18px;">
+                    <div class="form-group">
+                        <label for="donor-blood-type" class="form-label">Blood Type *</label>
+                        <select id="donor-blood-type" th:field="*{bloodGroup}" required class="form-select">
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="donor-city" class="form-label">City *</label>
+                        <input type="text" id="donor-city" th:field="*{city}" required placeholder="e.g. Colombo, Kandy" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="donor-province" class="form-label">Province *</label>
+                        <select id="donor-province" th:field="*{province}" required class="form-select">
+                            <option value="Western Province">Western Province</option>
+                            <option value="Central Province">Central Province</option>
+                            <option value="Southern Province">Southern Province</option>
+                            <option value="Northern Province">Northern Province</option>
+                            <option value="Eastern Province">Eastern Province</option>
+                            <option value="North Western Province">North Western Province</option>
+                            <option value="North Central Province">North Central Province</option>
+                            <option value="Uva Province">Uva Province</option>
+                            <option value="Sabaragamuwa Province">Sabaragamuwa Province</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section 3: Donation Frequency & Health History -->
+                <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); border-bottom: 2px solid var(--slate-100); padding-bottom: 8px; margin-bottom: 20px; margin-top: 30px;">
+                    3. Donation Experience &amp; Health Criteria
+                </h3>
+
+                <div class="form-grid-2" style="margin-bottom: 18px;">
+                    <div class="form-group">
+                        <label for="donor-availability" class="form-label">Availability Status</label>
+                        <select id="donor-availability" th:field="*{availability}" class="form-select">
+                            <option value="Available">Available (Ready to Donate)</option>
+                            <option value="Unavailable">Temporarily Unavailable</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="justify-content: flex-end; padding-bottom: 6px;">
+                        <label class="form-label">Contact Privacy</label>
+                        <div class="checkbox-wrap" style="margin-top: 6px;">
+                            <input type="checkbox" id="donor-allowcall" th:field="*{allowCall}">
+                            <label for="donor-allowcall" style="font-size: 0.92rem; color: var(--slate-700); cursor: pointer;">
+                                Allow verified patients &amp; coordinators to view my contact number
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label for="donor-notes" class="form-label">Additional Health / Location Notes (Optional)</label>
+                    <textarea id="donor-notes" th:field="*{notes}" rows="3" placeholder="e.g. Preferred blood bank location, past donations count, or health notes..." class="form-control"></textarea>
+                </div>
+
+                <!-- Section 4: Preferred Weekly Donation Hours -->
+                <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); border-bottom: 2px solid var(--slate-100); padding-bottom: 8px; margin-bottom: 20px; margin-top: 30px;">
+                    4. Preferred Weekly Donation Hours
+                </h3>
+                <p style="font-size: 0.88rem; color: var(--slate-500); margin-bottom: 16px;">
+                    Add your preferred days and time slots so coordinators know when to schedule your visits:
+                </p>
+
+                <div id="slots-grid" style="margin-bottom: 14px;">
+                    <!-- Default slot -->
+                    <div class="slot-item" style="display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px;">
+                        <select name="slotDays" class="form-select">
+                            <option value="Mon">Monday</option>
+                            <option value="Tue">Tuesday</option>
+                            <option value="Wed">Wednesday</option>
+                            <option value="Thu">Thursday</option>
+                            <option value="Fri">Friday</option>
+                            <option value="Sat" selected>Saturday</option>
+                            <option value="Sun">Sunday</option>
+                        </select>
+                        <input type="time" name="slotStarts" class="form-control" value="09:00">
+                        <input type="time" name="slotEnds" class="form-control" value="13:00">
+                        <button type="button" class="btn btn-secondary btn-sm remove-slot-btn" style="color: #dc2626; border-color: #fca5a5;">
+                            &times; Remove
+                        </button>
+                    </div>
+                </div>
+
+                <button type="button" id="add-slot-btn" class="btn btn-secondary btn-sm" style="margin-bottom: 30px;">
+                    + Add Preferred Time Slot
+                </button>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; justify-content: flex-end; gap: 14px; border-top: 1.5px solid var(--slate-200); padding-top: 24px;">
+                    <a th:href="@{/}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-lg" id="btn-submit-register">Register as Blood Donor</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Can You Donate Blood')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('canyoudonate')}"></header>
+
+    <!-- Header Hero Banner -->
+    <section class="search-header-hero hero-photo hero-photo--eligibility">
+        <div class="container">
+            <p class="section-subtitle" style="color: var(--carolina-blue); justify-content: center;">Donate Blood, Save Lives &bull; ලේ බිදක් දන් දෙමු</p>
+            <h1>Can You Donate Blood?</h1>
+            <p style="color: #cbd5e1; max-width: 640px; margin: 0 auto; font-size: 1rem;">
+                Check the donor health eligibility criteria set by the National Blood Transfusion Service to ensure safe, sterile donations for both you and the patient.
+            </p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container" style="padding-bottom: 80px;">
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <!-- Section 1: Standard Eligibility Requirements -->
+        <div class="about-grid" style="margin-top: 40px; margin-bottom: 60px;">
+            <figure class="about-banner photo about-photo">
+                <img th:src="@{/images/photos/health-check.jpg}" alt="A healthcare professional checking a patient's blood pressure before blood donation" width="520" height="440" loading="lazy" decoding="async">
+                <figcaption class="photo-tag">Every donor is screened first</figcaption>
+            </figure>
+
+            <div>
+                <p class="section-subtitle">Eligibility Criteria</p>
+                <h2 class="section-title">ඔබත් රුධිර දායකයකු වීමට නම්...</h2>
+                <p style="color: var(--slate-600); line-height: 1.8; margin-bottom: 20px;">
+                    රුධිර පරිත්‍යාගශීලියෙකු ලෙස පිළිගැනීමට නිර්ණායක කිහිපයක් සපුරාලිය යුතුය. පරිත්‍යාග කරන්නාගේ ආරක්ෂාව මෙන්ම පරිත්‍යාග කරන ලද රුධිරයේ ගුණාත්මකභාවය සහතික කිරීම සඳහා මෙම නිර්ණායක දක්වා ඇත.
+                </p>
+
+                <div class="about-features-list">
+                    <div class="about-feature-item">
+                        <div class="about-feature-bullet">&#10003;</div>
+                        <div class="about-feature-text">
+                            <strong>Age: 18 &ndash; 60 Years</strong> (First-time donors under 55) &bull; වයස අවුරුදු 18ත් 60ත් අතර.
+                        </div>
+                    </div>
+
+                    <div class="about-feature-item">
+                        <div class="about-feature-bullet">&#10003;</div>
+                        <div class="about-feature-text">
+                            <strong>Weight: Above 50 kg</strong> &bull; බර කිලෝග්‍රෑම් 50ට වැඩි පුද්ගලයකු විය යුතුය.
+                        </div>
+                    </div>
+
+                    <div class="about-feature-item">
+                        <div class="about-feature-bullet">&#10003;</div>
+                        <div class="about-feature-text">
+                            <strong>Donation Interval: Minimum 4 Months</strong> &bull; පෙර අවස්ථාවේදී රුධිරය ලබා දී මාස 4ක් සම්පූර්ණ විය යුතුය.
+                        </div>
+                    </div>
+
+                    <div class="about-feature-item">
+                        <div class="about-feature-bullet">&#10003;</div>
+                        <div class="about-feature-text">
+                            <strong>Hemoglobin Level &ge; 12.5 g/dl</strong> &bull; රුධිර හිමොග්ලොබින් ප්‍රමාණය 12.5g/dl හෝ ඊට වැඩි විය යුතුය.
+                        </div>
+                    </div>
+
+                    <div class="about-feature-item">
+                        <div class="about-feature-bullet">&#10003;</div>
+                        <div class="about-feature-text">
+                            <strong>Good Health &amp; Well-being</strong> &bull; ගර්භනී භාවයෙන් හෝ බරපතල රෝගී තත්වයකින් නොපෙළෙන.
+                        </div>
+                    </div>
+
+                    <div class="about-feature-item">
+                        <div class="about-feature-bullet">&#10003;</div>
+                        <div class="about-feature-text">
+                            <strong>Travel / Returnees: At least 3 Months</strong> &bull; විදෙස් ගත වී යලි මෙරටට පැමිණ අවම මාස 3කට වඩා වැඩි.
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 24px;">
+                    <a th:href="@{/register}" class="btn btn-primary btn-lg">I Am Eligible &mdash; Register Now</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Permanent & Temporary Deferrals (Matching blooddonation.lk) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 60px;">
+            <!-- Who cannot donate blood -->
+            <div class="form-card" style="margin: 0; border-top: 4px solid var(--crimson);">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <div class="stat-icon" style="background:#fee2e2;color:#dc2626;width:44px;height:44px;">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    </div>
+                    <h3 style="font-size: 1.3rem; color: var(--oxford-blue-1); font-weight: 700;">Who Cannot Donate Blood</h3>
+                </div>
+                <p style="font-size: 0.92rem; color: var(--slate-600); margin-bottom: 18px;">
+                    Permanent deferral conditions to ensure transfusion recipients are completely protected:
+                </p>
+                <ul style="display: flex; flex-direction: column; gap: 12px; font-size: 0.95rem; color: var(--slate-700);">
+                    <li style="display: flex; gap: 10px;">
+                        <span style="color: var(--crimson); font-weight: bold;">&bull;</span>
+                        <span>Ever tested positive for <strong>HIV/AIDS</strong> or <strong>Hepatitis B / C</strong> infections.</span>
+                    </li>
+                    <li style="display: flex; gap: 10px;">
+                        <span style="color: var(--crimson); font-weight: bold;">&bull;</span>
+                        <span>Ever injected recreational drugs or substances into veins or body.</span>
+                    </li>
+                    <li style="display: flex; gap: 10px;">
+                        <span style="color: var(--crimson); font-weight: bold;">&bull;</span>
+                        <span>Engaged in high-risk sexual behaviors or multiple non-regular sexual contacts.</span>
+                    </li>
+                    <li style="display: flex; gap: 10px;">
+                        <span style="color: var(--crimson); font-weight: bold;">&bull;</span>
+                        <span>Chronic heart, kidney, liver, or active malignant conditions requiring ongoing therapy.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Temporary Deferral Reasons -->
+            <div class="form-card" style="margin: 0; border-top: 4px solid var(--royal-blue);">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <div class="stat-icon blue" style="width:44px;height:44px;">
+                        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                    </div>
+                    <h3 style="font-size: 1.3rem; color: var(--oxford-blue-1); font-weight: 700;">Temporary Waiting Periods</h3>
+                </div>
+                <p style="font-size: 0.92rem; color: var(--slate-600); margin-bottom: 18px;">
+                    Certain lifestyle, medical, or travel events require a temporary wait before donating:
+                </p>
+                <ul style="display: flex; flex-direction: column; gap: 12px; font-size: 0.95rem; color: var(--slate-700);">
+                    <li style="display: flex; gap: 10px;">
+                        <span style="color: var(--royal-blue); font-weight: bold;">&bull;</span>
+                        <span><strong>Tattoo or Body Piercing:</strong> Wait 6 to 12 months after the procedure.</span>
+                    </li>
+                    <li style="display: flex; gap: 10px;">
+                        <span style="color: var(--royal-blue); font-weight: bold;">&bull;</span>
+                        <span><strong>Dental Extractions or Minor Surgery:</strong> Wait at least 1 to 3 months.</span>
+                    </li>
+                    <li style="display: flex; gap: 10px;">
+                        <span style="color: var(--royal-blue); font-weight: bold;">&bull;</span>
+                        <span><strong>Antibiotic Treatment / Infections:</strong> Wait 7 to 14 days after completing medication.</span>
+                    </li>
+                    <li style="display: flex; gap: 10px;">
+                        <span style="color: var(--royal-blue); font-weight: bold;">&bull;</span>
+                        <span><strong>Pregnancy &amp; Nursing:</strong> Wait at least 6 months after delivery or cessation of breastfeeding.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 3: Interactive Self-Checker -->
+        <div class="matrix-card" style="border: 2px solid var(--carolina-blue);">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <p class="section-subtitle" style="justify-content: center;">Quick Self-Assessment</p>
+                <h3 style="font-size: 1.5rem; color: var(--oxford-blue-1);">Am I Ready to Donate Today?</h3>
+                <p style="color: var(--slate-500); font-size: 0.92rem;">Tick all statements that apply to you:</p>
+            </div>
+
+            <div style="max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px;">
+                <label style="display: flex; gap: 12px; align-items: center; cursor: pointer; background: var(--slate-50); padding: 12px 16px; border-radius: var(--radius-sm);">
+                    <input type="checkbox" class="eligibility-chk" style="width: 20px; height: 20px; accent-color: var(--crimson);">
+                    <span>I am between 18 and 60 years of age.</span>
+                </label>
+                <label style="display: flex; gap: 12px; align-items: center; cursor: pointer; background: var(--slate-50); padding: 12px 16px; border-radius: var(--radius-sm);">
+                    <input type="checkbox" class="eligibility-chk" style="width: 20px; height: 20px; accent-color: var(--crimson);">
+                    <span>My body weight is at least 50 kg (110 lbs).</span>
+                </label>
+                <label style="display: flex; gap: 12px; align-items: center; cursor: pointer; background: var(--slate-50); padding: 12px 16px; border-radius: var(--radius-sm);">
+                    <input type="checkbox" class="eligibility-chk" style="width: 20px; height: 20px; accent-color: var(--crimson);">
+                    <span>At least 4 months have elapsed since my last donation.</span>
+                </label>
+                <label style="display: flex; gap: 12px; align-items: center; cursor: pointer; background: var(--slate-50); padding: 12px 16px; border-radius: var(--radius-sm);">
+                    <input type="checkbox" class="eligibility-chk" style="width: 20px; height: 20px; accent-color: var(--crimson);">
+                    <span>I feel healthy, well-rested, and have eaten a meal today.</span>
+                </label>
+                <label style="display: flex; gap: 12px; align-items: center; cursor: pointer; background: var(--slate-50); padding: 12px 16px; border-radius: var(--radius-sm);">
+                    <input type="checkbox" class="eligibility-chk" style="width: 20px; height: 20px; accent-color: var(--crimson);">
+                    <span>I have had no tattoos, piercings, or major surgeries in the last 6 months.</span>
+                </label>
+
+                <div id="eligibility-result" style="display: none; padding: 16px; border-radius: var(--radius-md); background: var(--success-bg); color: #14532d; font-weight: 600; text-align: center; margin-top: 10px;">
+                    🎉 Congratulations! You meet the standard initial requirements for blood donation.
+                    <div style="margin-top: 10px;">
+                        <a th:href="@{/register}" class="btn btn-primary btn-sm">Register as a Donor Now</a>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const checkboxes = document.querySelectorAll('.eligibility-chk');
+                    const resultBox = document.getElementById('eligibility-result');
+
+                    checkboxes.forEach(cb => {
+                        cb.addEventListener('change', () => {
+                            const allChecked = Array.from(checkboxes).every(c => c.checked);
+                            if (allChecked) {
+                                resultBox.style.display = 'block';
+                            } else {
+                                resultBox.style.display = 'none';
+                            }
+                        });
+                    });
+                });
+            </script>
+        </div>
+    </main>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

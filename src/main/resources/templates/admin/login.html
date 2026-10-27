@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Admin Login')}"></head>
+<body>
+
+    <!-- Navbar -->
+    <nav th:replace="~{layout :: navbar('admin')}"></nav>
+
+    <!-- Main Container -->
+    <main class="main-wrapper" style="display: flex; align-items: center; justify-content: center; min-height: 70vh;">
+        
+        <div class="card" style="max-width: 420px; width: 100%; margin: 0 auto; box-shadow: var(--shadow-lg); padding: 40px 32px;">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="fill: var(--color-primary); width: 60px; height: 60px; margin-bottom: 12px; filter: drop-shadow(0 4px 6px rgba(220, 38, 38, 0.25));">
+                    <path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 7V7a3 3 0 0 1 6 0v3H9L9 9z"/>
+                </svg>
+                <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--text-primary);">Admin Portal</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px;">Authorization Required</p>
+            </div>
+
+            <!-- Alerts -->
+            <div th:replace="~{layout :: alerts}"></div>
+
+            <form th:action="@{/login}" method="post" style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" required placeholder="Enter admin username" autocomplete="username">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" required placeholder="Enter admin password" autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1rem; margin-top: 8px; font-weight: 700; padding: 14px;">
+                    Log In
+                </button>
+            </form>
+            
+            <div style="text-align: center; margin-top: 20px; font-size: 0.85rem;">
+                <a th:href="@{/}" style="color: var(--text-secondary); font-weight: 500; display: inline-flex; align-items: center; gap: 4px;">
+                    ← Back to Home
+                </a>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

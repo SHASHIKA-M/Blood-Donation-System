@@ -1,0 +1,21 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="BloodDonationApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="blood-donation-spring" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.blooddonation.spring.BloodDonationApplication" />
+    <option name="ACTIVE_PROFILES" value="" />
+    <option name="PROGRAM_PARAMETERS" value="" />
+    <option name="VM_PARAMETERS" value="-Djava.library.path=$PROJECT_DIR$\native" />
+    <option name="ALTERNATIVE_JRE_PATH" value="C:\Program Files\Eclipse Adoptium\jdk-17.0.20.101-hotspot" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <option name="ENV_VARIABLES">
+      <map>
+        <entry key="DB_URL" value="jdbc:sqlserver://localhost:1433;databaseName=Blood_Connect;encrypt=true;trustServerCertificate=true;integratedSecurity=true;loginTimeout=10;" />
+        <entry key="DB_INTEGRATED_SECURITY" value="true" />
+      </map>
+    </option>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

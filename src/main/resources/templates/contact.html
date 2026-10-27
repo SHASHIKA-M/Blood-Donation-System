@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Contact Us')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('contact')}"></header>
+
+    <!-- Header Hero Banner -->
+    <section class="search-header-hero hero-photo hero-photo--contact">
+        <div class="container">
+            <p class="section-subtitle" style="color: var(--carolina-blue); justify-content: center;">24/7 Support Network</p>
+            <h1>Contact BloodDonation.lk</h1>
+            <p style="color: #cbd5e1; max-width: 600px; margin: 0 auto; font-size: 1rem;">
+                Have questions about blood donations, organizing community blood drives, or need assistance? Reach out to our dedicated support team.
+            </p>
+        </div>
+    </section>
+
+    <!-- Main Content Grid -->
+    <main class="container" style="padding-bottom: 80px;">
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1.25fr; gap: 32px; margin-top: -30px; position: relative; z-index: 10;">
+            <!-- Left Column: Coordinates & Information Card -->
+            <div class="form-card" style="margin: 0; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <h2 style="font-size: 1.5rem; color: var(--oxford-blue-1); margin-bottom: 12px; font-weight: 800;">Get In Touch</h2>
+                    <p style="color: var(--slate-600); font-size: 0.95rem; margin-bottom: 28px; line-height: 1.6;">
+                        Whether you are an individual voluntary donor, a healthcare coordinator, or an organization hosting a blood donation camp, we are here to support you 24x7.
+                    </p>
+
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <!-- Hotline -->
+                        <div style="display: flex; gap: 16px; align-items: flex-start;">
+                            <div class="stat-icon" style="width: 48px; height: 48px;">
+                                <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                            </div>
+                            <div>
+                                <h4 style="font-size: 1rem; color: var(--oxford-blue-1); font-weight: 700;">24/7 Emergency Hotline</h4>
+                                <p style="font-size: 1.05rem; font-weight: 600; color: var(--crimson); margin-top: 2px;">+94 11 234 5678</p>
+                                <span style="font-size: 0.82rem; color: var(--slate-500);">Direct emergency dispatch line</span>
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div style="display: flex; gap: 16px; align-items: flex-start;">
+                            <div class="stat-icon blue" style="width: 48px; height: 48px;">
+                                <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                            </div>
+                            <div>
+                                <h4 style="font-size: 1rem; color: var(--oxford-blue-1); font-weight: 700;">Support Email</h4>
+                                <p style="font-size: 0.98rem; font-weight: 600; color: var(--royal-blue); margin-top: 2px;">contact@blooddonation.lk</p>
+                                <span style="font-size: 0.82rem; color: var(--slate-500);">Expect response within 1 business day</span>
+                            </div>
+                        </div>
+
+                        <!-- Address -->
+                        <div style="display: flex; gap: 16px; align-items: flex-start;">
+                            <div class="stat-icon green" style="width: 48px; height: 48px;">
+                                <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            </div>
+                            <div>
+                                <h4 style="font-size: 1rem; color: var(--oxford-blue-1); font-weight: 700;">Headquarters</h4>
+                                <p style="font-size: 0.92rem; color: var(--slate-700); margin-top: 2px; line-height: 1.5;">
+                                    National Blood Transfusion Service,<br>Elvitigala Mawatha, Colombo 05, Sri Lanka
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="schedule-box" style="margin-top: 32px; max-width: 100%; background: var(--crimson-50); border-color: var(--crimson-border);">
+                    <div class="schedule-icon">
+                        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                    </div>
+                    <div class="schedule-text" style="color: var(--oxford-blue-1);">
+                        Community Network Support<br>
+                        <span style="font-size: 0.85rem; font-weight: 500; color: var(--crimson);">Always Online &bull; 365 Days</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Message Form -->
+            <div class="form-card" style="margin: 0;">
+                <h2 style="font-size: 1.5rem; color: var(--oxford-blue-1); margin-bottom: 8px; font-weight: 800;">Send a Message</h2>
+                <p style="color: var(--slate-500); font-size: 0.95rem; margin-bottom: 24px;">
+                    Fill out the form below and an administrative officer will respond promptly.
+                </p>
+
+                <form th:action="@{/contact}" method="post">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="contact-name" class="form-label">Your Name *</label>
+                        <input type="text" id="contact-name" name="name" required placeholder="e.g. Kasun Jayawardena" class="form-control">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="contact-email" class="form-label">Email Address *</label>
+                        <input type="email" id="contact-email" name="email" required placeholder="e.g. kasun@example.com" class="form-control">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="contact-subject" class="form-label">Subject *</label>
+                        <input type="text" id="contact-subject" name="subject" required placeholder="e.g. Blood Donation Camp Coordination" class="form-control">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 24px;">
+                        <label for="contact-message" class="form-label">Message *</label>
+                        <textarea id="contact-message" name="message" rows="5" required placeholder="How can our blood donation community assist you?" class="form-control"></textarea>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn btn-primary btn-lg" id="btn-submit-contact">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                            <span>Send Message</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

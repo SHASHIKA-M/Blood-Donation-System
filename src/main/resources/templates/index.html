@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Home')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('home')}"></header>
+
+    <!-- Urgent ticker -->
+    <div class="ticker" aria-label="Urgent blood needs">
+        <div class="container" style="overflow: hidden;">
+            <div class="ticker-track ticker-track--single" th:unless="${#lists.isEmpty(urgentRequests)}">
+                <span class="ticker-item" th:each="req : ${urgentRequests}">
+                    <span class="blood-badge sm" th:text="${req.bloodGroup}">O+</span>
+                    <span th:text="${req.units} + ' unit(s) needed at ' + ${req.hospital}">1 unit needed</span>
+                </span>
+            </div>
+            <div class="ticker-track" th:if="${#lists.isEmpty(urgentRequests)}" style="animation: none; width: 100%; justify-content: center;">
+                <span class="ticker-item">No urgent requests right now — thank you, donors.</span>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <!-- Alerts Notification Container -->
+        <div class="container" style="margin-top: 20px;">
+            <div th:replace="~{layout :: alerts}"></div>
+        </div>
+
+        <!-- ==========================================================================
+             HERO — real blood service entry points
+             ========================================================================== -->
+        <section class="hero" id="home" aria-label="Blood Donation Hero">
+            <div class="container hero-grid">
+                <div class="hero-content">
+                    <div class="hero-badge-wrap">
+                        <img th:src="@{/images/blood-icon.svg}" alt="Blood Icon" width="28" height="28">
+                        <span class="hero-badge-text">National Blood Donor Network</span>
+                    </div>
+
+                    <h1 class="hero-title">Donate Blood.<br>Save Lives.</h1>
+                    <h2 class="hero-title-sinhala">ලේ බිදක් දන් දෙමු. සුරකිමු ජීවිතයක්...!</h2>
+
+                    <p class="hero-text">
+                        One donation can save up to three lives. Register in two minutes, book a donation slot,
+                        or post an urgent request — our hospitals, QA lab and delivery teams handle the rest.
+                    </p>
+
+                    <div class="hero-actions">
+                        <a th:href="@{/register}" class="btn btn-primary btn-lg">Become a Donor</a>
+                        <a th:href="@{/requests}" class="btn btn-secondary btn-lg">Request Blood</a>
+                    </div>
+
+                    <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 8px;">
+                        <div class="stat-card" style="padding: 16px;">
+                            <div>
+                                <div class="stat-number" th:text="${totalDonors}">0</div>
+                                <div class="stat-label">Donors</div>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="padding: 16px;">
+                            <div>
+                                <div class="stat-number" th:text="${totalOpenRequests}">0</div>
+                                <div class="stat-label">Open Needs</div>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="padding: 16px;">
+                            <div>
+                                <div class="stat-number" th:text="${totalFulfilledRequests}">0</div>
+                                <div class="stat-label">Lives Touched</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <figure class="hero-media">
+                    <div class="hero-media-main photo">
+                        <img th:src="@{/images/photos/hero-donation.jpg}" alt="A voluntary blood donor giving blood on a donation bed while a nurse assists at a blood donation centre" width="900" height="720" fetchpriority="high" decoding="async">
+                        <span class="photo-tag">Live donation in progress</span>
+                    </div>
+                    <div class="hero-media-sub photo">
+                        <img th:src="@{/images/photos/donor-thumbs-up.jpg}" alt="Smiling blood donor giving a thumbs up after a successful donation" width="440" height="330" loading="lazy" decoding="async">
+                    </div>
+                    <div class="hero-media-stat">
+                        <span class="hm-num">3</span>
+                        <span class="hm-txt">lives can be saved by a single unit of donated blood</span>
+                    </div>
+                </figure>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             LIVE BLOOD STOCK BOARD
+             ========================================================================== -->
+        <section class="section" aria-label="Live blood stock" style="padding-top: 56px;">
+            <div class="container">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <p class="section-subtitle">QA-Verified Inventory</p>
+                        <h2 class="section-title">Live Blood Stock</h2>
+                    </div>
+                    <a th:href="@{/availability}" class="btn btn-outline-crimson btn-sm">Full Stock Board &rarr;</a>
+                </div>
+
+                <div class="stock-grid">
+                    <div th:each="entry : ${stockByGroup}" class="stock-card"
+                         th:classappend="${entry.value == 0 ? 'out' : (entry.value <= 5 ? 'critical' : (entry.value <= 10 ? 'low' : ''))}">
+                        <div class="blood-badge" th:text="${entry.key}">O+</div>
+                        <div>
+                            <div class="stock-count" th:text="${entry.value}">0</div>
+                            <div class="stock-sub" th:text="${entry.value == 0 ? 'Out of stock' : 'units available'}">units available</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             WHY DONATE BLOOD — supporting photography
+             ========================================================================== -->
+        <section class="section" aria-label="Why donate blood" style="padding-top: 24px;">
+            <div class="container">
+                <p class="section-subtitle text-center">Why Your Donation Matters</p>
+                <h2 class="section-title text-center">Why Donate Blood?</h2>
+                <p class="text-center text-muted" style="max-width: 700px; margin: 0 auto;">
+                    Blood cannot be manufactured — it only comes from people like you. One appointment, a few comfortable
+                    minutes, and a patient somewhere gets the chance to live.
+                </p>
+
+                <div class="grid-photos-3">
+                    <article class="photo-card">
+                        <div class="photo">
+                            <img th:src="@{/images/photos/campaign-community.jpg}" alt="A woman donating blood at a community blood donation drive" width="720" height="495" loading="lazy" decoding="async">
+                            <span class="photo-card-badge">Saves Lives</span>
+                        </div>
+                        <div class="photo-card-body">
+                            <span class="photo-card-kicker">Every Drop Counts</span>
+                            <h3>Save Up To Three Lives</h3>
+                            <p>A single whole-blood donation is separated into red cells, platelets and plasma — enough to help
+                                up to three different patients fighting illness, surgery or trauma.</p>
+                            <a th:href="@{/register}" class="photo-card-link">Become a donor <span>&rarr;</span></a>
+                        </div>
+                    </article>
+
+                    <article class="photo-card">
+                        <div class="photo">
+                            <img th:src="@{/images/photos/blood-sample-tube.jpg}" alt="A gloved healthcare worker holding a test tube with a blood sample for screening" width="720" height="495" loading="lazy" decoding="async">
+                            <span class="photo-card-badge">Free Screening</span>
+                        </div>
+                        <div class="photo-card-body">
+                            <span class="photo-card-kicker">Donor Wellness</span>
+                            <h3>Free Health Check Every Time</h3>
+                            <p>Before you donate, our team checks your pulse, blood pressure, haemoglobin and weight at no cost —
+                                a small but genuine health snapshot for every volunteer.</p>
+                            <a th:href="@{/can-you-donate}" class="photo-card-link">Check your eligibility <span>&rarr;</span></a>
+                        </div>
+                    </article>
+
+                    <article class="photo-card">
+                        <div class="photo">
+                            <img th:src="@{/images/photos/volunteers.jpg}" alt="Healthcare worker standing together with community volunteers" width="720" height="495" loading="lazy" decoding="async">
+                            <span class="photo-card-badge">Community</span>
+                        </div>
+                        <div class="photo-card-body">
+                            <span class="photo-card-kicker">Stronger Together</span>
+                            <h3>Build A Healthier Community</h3>
+                            <p>Voluntary donors keep rural hospitals, maternity wards and emergency rooms ready for the moment
+                                blood is needed most — no manufactured substitute exists.</p>
+                            <a th:href="@{/about}" class="photo-card-link">Our mission <span>&rarr;</span></a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             DONOR JOURNEY — how a real donation flows
+             ========================================================================== -->
+        <section class="section section-bg" aria-label="Donation journey">
+            <div class="container">
+                <p class="section-subtitle text-center">End-To-End Process</p>
+                <h2 class="section-title text-center">From Your Arm To A Patient</h2>
+                <div class="process-grid">
+                    <article class="process-card">
+                        <div class="photo">
+                            <img th:src="@{/images/photos/health-check.jpg}" alt="A healthcare worker checking a donor's blood pressure before donation" width="640" height="480" loading="lazy" decoding="async">
+                            <span class="process-step">Step 01</span>
+                        </div>
+                        <div class="process-card-body">
+                            <h4>Register &amp; Health Check</h4>
+                            <p>Sign up in two minutes, then a quick pulse, blood-pressure and haemoglobin screening confirms you are ready.</p>
+                        </div>
+                    </article>
+
+                    <article class="process-card">
+                        <div class="photo">
+                            <img th:src="@{/images/photos/donor-arm-bags.jpg}" alt="A donor's arm connected to a blood collection bag during donation" width="640" height="480" loading="lazy" decoding="async">
+                            <span class="process-step">Step 02</span>
+                        </div>
+                        <div class="process-card-body">
+                            <h4>Book &amp; Donate</h4>
+                            <p>Pick a slot at your nearest blood bank and relax — a safe whole-blood draw takes only 8 to 10 minutes.</p>
+                        </div>
+                    </article>
+
+                    <article class="process-card">
+                        <div class="photo">
+                            <img th:src="@{/images/photos/lab-screening.jpg}" alt="A laboratory technician operating a centrifuge to screen donated blood" width="640" height="480" loading="lazy" decoding="async">
+                            <span class="process-step">Step 03</span>
+                        </div>
+                        <div class="process-card-body">
+                            <h4>Lab Screening</h4>
+                            <p>Every unit is tested for HIV, Hepatitis B &amp; C, syphilis and malaria by QA officers before release.</p>
+                        </div>
+                    </article>
+
+                    <article class="process-card">
+                        <div class="photo">
+                            <img th:src="@{/images/photos/hospital-care.jpg}" alt="A nurse caring for a hospital patient receiving treatment" width="640" height="480" loading="lazy" decoding="async">
+                            <span class="process-step">Step 04</span>
+                        </div>
+                        <div class="process-card-body">
+                            <h4>Match &amp; Deliver</h4>
+                            <p>Hospitals request compatible stock; cold-chain couriers deliver it to the patient's bedside. Lives saved.</p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             FIND DONOR
+             ========================================================================== -->
+        <section class="finder-section has-photo" id="find-donor" aria-label="Find Donor Search" style="margin-top: 0;">
+            <div class="container">
+                <div class="finder-card">
+                    <p class="section-subtitle text-center">Find the Closest Blood Donor</p>
+                    <h2 class="section-title text-center">FIND DONOR</h2>
+
+                    <form class="finder-form" th:action="@{/search}" method="GET">
+                        <div class="form-group">
+                            <label for="finder-blood-type" class="form-label">Blood Type:</label>
+                            <select id="finder-blood-type" name="bloodGroup" class="form-select">
+                                <option value="">All Blood Types</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="finder-city" class="form-label">City:</label>
+                            <input type="text" id="finder-city" name="city" placeholder="e.g. Colombo, Kandy, Galle" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="finder-province" class="form-label">Province:</label>
+                            <select id="finder-province" name="province" class="form-select">
+                                <option value="">All Provinces</option>
+                                <option value="Western Province">Western Province</option>
+                                <option value="Central Province">Central Province</option>
+                                <option value="Southern Province">Southern Province</option>
+                                <option value="Northern Province">Northern Province</option>
+                                <option value="Eastern Province">Eastern Province</option>
+                                <option value="North Western Province">North Western Province</option>
+                                <option value="North Central Province">North Central Province</option>
+                                <option value="Uva Province">Uva Province</option>
+                                <option value="Sabaragamuwa Province">Sabaragamuwa Province</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary finder-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                            </svg>
+                            <span>Find Donor</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             EMERGENCY BLOOD REQUESTS
+             ========================================================================== -->
+        <section class="urgent-section" aria-label="Urgent Blood Requests">
+            <div class="container">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <p class="section-subtitle">Live Hospital &amp; Patient Needs</p>
+                        <h2 class="section-title">Emergency Blood Requests</h2>
+                    </div>
+                    <a th:href="@{/requests}" class="btn btn-outline-crimson btn-sm">View All Requests &rarr;</a>
+                </div>
+
+                <div class="banner-photo">
+                    <img th:src="@{/images/photos/hospital-care.jpg}" alt="A hospital nurse caring for a patient receiving treatment" width="1400" height="420" loading="lazy" decoding="async">
+                    <div class="banner-photo-content">
+                        <h3>Someone in a hospital ward is waiting for blood right now</h3>
+                        <p>Coordinators post verified needs from theatres, maternity units and cancer wards every hour. Answering
+                            a request takes minutes — your donation travels through our cold chain straight to the bedside.</p>
+                    </div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(urgentRequests)}" style="padding: 40px; text-align: center; background: var(--white); border-radius: var(--radius-md); margin-top: 24px; border: 1.5px dashed var(--slate-300);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="#16a34a" style="margin: 0 auto 12px auto;">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    <p style="font-weight: 700; font-size: 1.1rem; color: var(--oxford-blue-1);">All current emergency requests are fulfilled!</p>
+                    <p style="color: var(--slate-500); margin-top: 4px;">Thank you to all donors. Check back or register to be alerted when a matching request is posted.</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(urgentRequests)}" class="request-cards-grid">
+                    <div th:each="req : ${urgentRequests}" class="request-card urgent">
+                        <div>
+                            <div class="request-header">
+                                <div class="blood-badge" th:text="${req.bloodGroup}">O+</div>
+                                <span class="urgency-pill urgent">URGENT</span>
+                            </div>
+
+                            <h3 class="request-patient" th:text="${req.patientName}">Patient Name</h3>
+                            <div class="request-meta">
+                                <div class="request-meta-item">
+                                    <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                                    <span>Hospital: <strong th:text="${req.hospital}">NHSL Colombo</strong></span>
+                                </div>
+                                <div class="request-meta-item">
+                                    <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+                                    <span>Needed By: <strong class="date date--datetime" th:text="${req.neededBy != null ? #temporals.format(req.neededBy, 'dd MMM yyyy · HH:mm') : '—'}" th:title="${req.neededBy != null ? #temporals.format(req.neededBy, 'dd MMM yyyy · HH:mm') : ''}">Date</strong></span>
+                                </div>
+                                <div class="request-meta-item">
+                                    <svg viewBox="0 0 24 24"><path d="M12 2c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                                    <span>Units Required: <strong th:text="${req.units} + ' Unit(s)'">2 Units</strong></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="request-footer">
+                            <span style="font-size: 0.85rem; color: var(--slate-500); font-weight: 500;" th:text="${req.city}">Colombo</span>
+                            <a th:href="@{/requests}" class="btn btn-primary btn-sm">Support Request</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             BLOOD DONATION CAMPAIGNS & EVENTS
+             ========================================================================== -->
+        <section class="section" aria-label="Blood donation campaigns" style="padding-bottom: 40px;">
+            <div class="container">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <p class="section-subtitle">Join A Drive Near You</p>
+                        <h2 class="section-title">Blood Donation Campaigns</h2>
+                    </div>
+                    <a th:href="@{/contact}" class="btn btn-outline-crimson btn-sm">Host A Campaign &rarr;</a>
+                </div>
+
+                <div class="grid-photos-3">
+                    <article class="photo-card">
+                        <div class="photo">
+                            <img th:src="@{/images/photos/campaign-outdoor.jpg}" alt="Medical staff organising an outdoor community blood donation campaign" width="720" height="495" loading="lazy" decoding="async">
+                            <span class="photo-card-badge">Every Weekend</span>
+                        </div>
+                        <div class="photo-card-body">
+                            <span class="photo-card-kicker">Community Drive</span>
+                            <h3>Community Donor Days</h3>
+                            <div class="photo-card-meta">
+                                <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                                <span>Town halls &amp; religious centres, islandwide</span>
+                            </div>
+                            <p>Volunteer teams set up mobile donation desks in your neighbourhood — walk in, get screened and donate
+                                in under thirty minutes.</p>
+                            <a th:href="@{/register}" class="photo-card-link">Volunteer for a drive <span>&rarr;</span></a>
+                        </div>
+                    </article>
+
+                    <article class="photo-card">
+                        <div class="photo">
+                            <img th:src="@{/images/photos/campaign-indoor.jpg}" alt="A young woman donating blood at an indoor charity campaign guided by staff" width="720" height="495" loading="lazy" decoding="async">
+                            <span class="photo-card-badge">Corporate</span>
+                        </div>
+                        <div class="photo-card-body">
+                            <span class="photo-card-kicker">Workplace &amp; Campus</span>
+                            <h3>School &amp; Corporate Blood Drives</h3>
+                            <div class="photo-card-meta">
+                                <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+                                <span>Universities, corporates &amp; clubs</span>
+                            </div>
+                            <p>We bring the collection team, screening kit and registration desk to your campus or office for a full
+                                day of scheduled donations.</p>
+                            <a th:href="@{/contact}" class="photo-card-link">Book your organisation <span>&rarr;</span></a>
+                        </div>
+                    </article>
+
+                    <article class="photo-card">
+                        <div class="photo">
+                            <img th:src="@{/images/photos/blood-drive-closeup.jpg}" alt="A donor giving blood at a medical centre blood drive" width="720" height="495" loading="lazy" decoding="async">
+                            <span class="photo-card-badge">24/7 Appeals</span>
+                        </div>
+                        <div class="photo-card-body">
+                            <span class="photo-card-kicker">Emergency Response</span>
+                            <h3>Hospital Emergency Appeals</h3>
+                            <div class="photo-card-meta">
+                                <svg viewBox="0 0 24 24"><path d="M12 2c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                                <span>Broadcast to matching donors instantly</span>
+                            </div>
+                            <p>When a ward runs short, our live ticker and SMS alerts reach every eligible donor in the matching blood
+                                group within minutes.</p>
+                            <a th:href="@{/requests}" class="photo-card-link">See live appeals <span>&rarr;</span></a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             ELIGIBILITY + COMPATIBILITY
+             ========================================================================== -->
+        <section class="eligibility-section" id="eligibility" aria-label="Donation Eligibility">
+            <div class="container">
+                <p class="section-subtitle text-center">Eligibility Criteria</p>
+                <h2 class="section-title text-center">Can You Donate Blood?</h2>
+                <p class="text-center text-muted" style="max-width: 680px; margin: 0 auto;">
+                    To protect both donor health and recipient safety, the National Blood Transfusion Service defines clear medical eligibility guidelines.
+                </p>
+
+                <div class="eligibility-cards-grid">
+                    <div class="eligibility-card">
+                        <div class="eligibility-icon-wrap">
+                            <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+                        </div>
+                        <h3 class="eligibility-title">Age 18 &ndash; 60 Years</h3>
+                        <p class="eligibility-desc">First-time donors should be under 55 years old. Regular donors may donate up to age 65 upon clinical evaluation.</p>
+                    </div>
+
+                    <div class="eligibility-card">
+                        <div class="eligibility-icon-wrap">
+                            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        </div>
+                        <h3 class="eligibility-title">Weight Above 50 kg</h3>
+                        <p class="eligibility-desc">Donors must weigh at least 50 kg (110 lbs) to safely donate standard whole blood units (350ml or 450ml).</p>
+                    </div>
+
+                    <div class="eligibility-card">
+                        <div class="eligibility-icon-wrap">
+                            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                        </div>
+                        <h3 class="eligibility-title">Every 4 Months</h3>
+                        <p class="eligibility-desc">A minimum of 4 months (120 days) must have passed since your previous whole blood donation.</p>
+                    </div>
+
+                    <div class="eligibility-card">
+                        <div class="eligibility-icon-wrap">
+                            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        </div>
+                        <h3 class="eligibility-title">Hemoglobin &ge; 12.5 g/dl</h3>
+                        <p class="eligibility-desc">A quick finger-prick test is performed at every donation center to verify healthy iron levels.</p>
+                    </div>
+                </div>
+
+                <div class="matrix-card">
+                    <h3 style="font-size: 1.3rem; margin-bottom: 8px; color: var(--oxford-blue-1); text-align: center;">Blood Type Compatibility Chart</h3>
+                    <p style="font-size: 0.92rem; color: var(--slate-500); text-align: center; margin-bottom: 20px;">
+                        Understand how red blood cell transfusions match between donors and recipients.
+                    </p>
+
+                    <div class="table-responsive">
+                        <table class="compatibility-table">
+                            <thead>
+                                <tr>
+                                    <th>Blood Type</th>
+                                    <th>You Can Donate Blood To</th>
+                                    <th>You Can Receive Blood From</th>
+                                    <th>Universal Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="blood-cell">O-</td>
+                                    <td class="can-give">Everyone (All Blood Types)</td>
+                                    <td class="can-receive">O- only</td>
+                                    <td><span class="status-badge available" style="background:#fee2e2;color:#b91c1c;">Universal Red Cell Donor</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="blood-cell">O+</td>
+                                    <td class="can-give">O+, A+, B+, AB+</td>
+                                    <td class="can-receive">O+, O-</td>
+                                    <td>Most Common Blood Group</td>
+                                </tr>
+                                <tr>
+                                    <td class="blood-cell">A-</td>
+                                    <td class="can-give">A+, A-, AB+, AB-</td>
+                                    <td class="can-receive">A-, O-</td>
+                                    <td>Compatible with A and AB</td>
+                                </tr>
+                                <tr>
+                                    <td class="blood-cell">A+</td>
+                                    <td class="can-give">A+, AB+</td>
+                                    <td class="can-receive">A+, A-, O+, O-</td>
+                                    <td>Compatible with A+ and AB+</td>
+                                </tr>
+                                <tr>
+                                    <td class="blood-cell">B-</td>
+                                    <td class="can-give">B+, B-, AB+, AB-</td>
+                                    <td class="can-receive">B-, O-</td>
+                                    <td>Compatible with B and AB</td>
+                                </tr>
+                                <tr>
+                                    <td class="blood-cell">B+</td>
+                                    <td class="can-give">B+, AB+</td>
+                                    <td class="can-receive">B+, B-, O+, O-</td>
+                                    <td>Compatible with B+ and AB+</td>
+                                </tr>
+                                <tr>
+                                    <td class="blood-cell">AB-</td>
+                                    <td class="can-give">AB+, AB-</td>
+                                    <td class="can-receive">AB-, A-, B-, O-</td>
+                                    <td>Compatible with AB types</td>
+                                </tr>
+                                <tr>
+                                    <td class="blood-cell">AB+</td>
+                                    <td class="can-give">AB+ only</td>
+                                    <td class="can-receive">Everyone (All Blood Types)</td>
+                                    <td><span class="status-badge available" style="background:#e0f2fe;color:#0369a1;">Universal Recipient</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 24px;">
+                        <a th:href="@{/can-you-donate}" class="btn btn-outline-crimson btn-sm">Full Eligibility &amp; Health Guidelines &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             CTA
+             ========================================================================== -->
+        <section class="cta-section" aria-label="Book a Blood Donation">
+            <div class="container cta-grid">
+                <figure class="cta-banner photo" style="aspect-ratio: 13/10; margin: 0;">
+                    <img th:src="@{/images/photos/donation-clinic.jpg}" alt="Donors giving blood on clinic beds while healthcare staff assist them" width="520" height="400" loading="lazy" decoding="async">
+                    <figcaption class="photo-tag">Open daily &bull; Walk-ins welcome</figcaption>
+                </figure>
+                <div class="cta-content">
+                    <p class="section-subtitle">Give Blood Directly To Us</p>
+                    <h2 class="section-title">We Are Open And Welcoming Donors</h2>
+                    <p class="cta-text">
+                        Every two seconds, someone in Sri Lanka needs blood. Your single donation of whole blood can save up to three lives. Step forward today and become a registered life saver.
+                    </p>
+                    <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+                        <a th:href="@{/register}" class="btn btn-primary btn-lg">Register as Donor Now</a>
+                        <a th:href="@{/contact}" class="btn btn-secondary btn-lg" style="background: rgba(255,255,255,0.1); color: white; border-color: rgba(255,255,255,0.3);">Contact Centers</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

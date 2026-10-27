@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Admin Dashboard')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('admin')}"></header>
+
+    <main class="container" style="padding-block: 40px 80px;">
+        <!-- Admin Navigation Bar -->
+        <div th:replace="~{admin/_nav :: adminNav('dashboard')}"></div>
+
+        <!-- Alerts -->
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <!-- Top Statistics Grid -->
+        <div class="stats-grid" style="margin-bottom: 32px;">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                </div>
+                <div>
+                    <div class="stat-number" th:text="${totalDonors}">0</div>
+                    <div class="stat-label">Total Registered Donors</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                </div>
+                <div>
+                    <div class="stat-number" th:text="${totalOpenRequests}">0</div>
+                    <div class="stat-label">Open Urgent Needs</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                </div>
+                <div>
+                    <div class="stat-number" th:text="${totalFulfilledRequests}">0</div>
+                    <div class="stat-label">Fulfilled Transfusions</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                </div>
+                <div>
+                    <div class="stat-number" th:text="${totalMessages}">0</div>
+                    <div class="stat-label">Contact Inquiries (<span th:text="${unreadMessages}">0</span> unread)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts / Analytics Row -->
+        <div class="dash-split" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+            <!-- Blood Group Distribution -->
+            <div class="form-card" style="margin: 0; padding: 24px;">
+                <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 18px;">
+                    Blood Group Distribution
+                </h3>
+                <div th:if="${#maps.isEmpty(bloodGroupStats)}" style="color: var(--slate-500); text-align: center; padding: 20px;">
+                    No donor distribution stats recorded yet.
+                </div>
+                <div th:unless="${#maps.isEmpty(bloodGroupStats)}" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div th:each="entry : ${bloodGroupStats}">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88rem; font-weight: 600; margin-bottom: 4px;">
+                            <span th:text="${entry.key} + ' Blood Type'">A+</span>
+                            <span th:text="${entry.value} + ' donor(s)'">2</span>
+                        </div>
+                        <div style="height: 8px; background: var(--slate-100); border-radius: var(--radius-pill); overflow: hidden;">
+                            <div th:style="'height: 100%; background: var(--crimson-gradient); width: ' + (${totalDonors > 0 ? (entry.value * 100.0 / totalDonors) : 0}) + '%; border-radius: var(--radius-pill);'"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Regional City Breakdown -->
+            <div class="form-card" style="margin: 0; padding: 24px;">
+                <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 18px;">
+                    Regional City Coverage
+                </h3>
+                <div th:if="${#maps.isEmpty(cityStats)}" style="color: var(--slate-500); text-align: center; padding: 20px;">
+                    No city statistics available.
+                </div>
+                <div th:unless="${#maps.isEmpty(cityStats)}" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div th:each="entry : ${cityStats}">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88rem; font-weight: 600; margin-bottom: 4px;">
+                            <span th:text="${entry.key}">Colombo</span>
+                            <span th:text="${entry.value} + ' donor(s)'">2</span>
+                        </div>
+                        <div style="height: 8px; background: var(--slate-100); border-radius: var(--radius-pill); overflow: hidden;">
+                            <div th:style="'height: 100%; background: var(--blue-gradient); width: ' + (${totalDonors > 0 ? (entry.value * 100.0 / totalDonors) : 0}) + '%; border-radius: var(--radius-pill);'"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Tables Grid -->
+        <div class="dash-split" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <!-- Recent Donors -->
+            <div class="form-card" style="margin: 0; padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); font-weight: 700;">Recent Donors</h3>
+                    <a th:href="@{/admin/donors}" class="btn btn-secondary btn-sm">View All</a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table table-compact">
+                        <thead>
+                            <tr>
+                                <th class="col-center">Group</th>
+                                <th>Name</th>
+                                <th>City</th>
+                                <th class="col-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="d : ${recentDonors}">
+                                <td class="td-center"><span class="blood-badge sm" th:text="${d.bloodGroup}">O+</span></td>
+                                <td><strong th:text="${d.name}">Aman</strong></td>
+                                <td th:text="${d.city}">Colombo</td>
+                                <td class="td-center">
+                                    <span class="status-badge" th:classappend="${#strings.equalsIgnoreCase(d.availability, 'Available') ? 'available' : 'unavailable'}" th:text="${d.availability}">Available</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recent Requests -->
+            <div class="form-card" style="margin: 0; padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); font-weight: 700;">Recent Urgent Needs</h3>
+                    <a th:href="@{/admin/requests}" class="btn btn-secondary btn-sm">View All</a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table table-compact">
+                        <thead>
+                            <tr>
+                                <th class="col-center">Blood</th>
+                                <th>Patient</th>
+                                <th>Hospital</th>
+                                <th class="col-center">Units</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="r : ${recentRequests}">
+                                <td class="td-center"><span class="blood-badge sm" th:text="${r.bloodGroup}">A+</span></td>
+                                <td><strong th:text="${r.patientName}">Kamal</strong></td>
+                                <td th:text="${r.hospital}">Apollo</td>
+                                <td class="td-center"><span class="status-badge available" th:text="${r.units} + ' bag(s)'">2</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

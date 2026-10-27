@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('QA Officer Portal')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('admin')}"></header>
+
+    <main class="container" style="padding-block: 40px 80px;">
+        <!-- Stakeholder Portal Navigation -->
+        <div th:replace="~{portal/_nav :: portalNav('qa')}"></div>
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <!-- Page Header -->
+        <div th:replace="~{portal/_hero :: portalHero('/images/photos/lab-screening.jpg','Quality Assurance','Laboratory Screening & Safety Compliance','Verify clinical compliance, perform mandatory viral pathogen screening, and approve safe blood units.')}"></div>
+
+        <div class="qa-layout" style="display: grid; grid-template-columns: 420px 1fr; gap: 28px; align-items: start;">
+            <!-- Screening Form Section -->
+            <div>
+                <div class="form-card" style="margin: 0; padding: 24px; border-top: 3px solid var(--royal-blue);">
+                    <h2 style="font-size: 1.2rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 16px;">
+                        Screen Blood Unit
+                    </h2>
+
+                    <!-- Unit Selector Form -->
+                    <form method="get" th:action="@{/portal/qa}" style="display: flex; gap: 8px; margin-bottom: 20px;">
+                        <select name="unitId" class="form-select" style="font-size: 0.88rem; flex: 1;">
+                            <option value="">-- Choose Unit to Test --</option>
+                            <option th:each="u : ${pendingUnits}" th:value="${u.id}"
+                                    th:selected="${selectedUnit != null and selectedUnit.id == u.id}"
+                                    th:text="${#strings.substring(u.id,0,8) + '... | ' + u.bloodGroup + ' | ' + u.component + ' (' + u.status + ')'}">
+                            </option>
+                        </select>
+                        <button class="btn btn-secondary btn-sm" type="submit" style="white-space: nowrap;">Load Unit</button>
+                    </form>
+
+                    <!-- Selected Unit Details & Screening Form -->
+                    <div th:if="${selectedUnit != null}">
+                        <div style="background: #f8fafc; border: 1px solid var(--slate-200); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <span class="blood-badge" th:text="${selectedUnit.bloodGroup}" style="font-size: 1rem; padding: 4px 12px;">A+</span>
+                                <span th:class="${selectedUnit.status == 'Ready' ? 'badge badge-success' : (selectedUnit.status != null and selectedUnit.status.contains('Pending') ? 'badge badge-warning' : 'badge badge-danger')}"
+                                      th:text="${selectedUnit.status}">Status</span>
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--slate-600); line-height: 1.6;">
+                                <div><strong>Unit ID:</strong> <span th:text="${selectedUnit.id}" style="font-family: monospace; font-size: 0.8rem;"></span></div>
+                                <div><strong>Component:</strong> <span th:text="${selectedUnit.component}">Whole Blood</span></div>
+                                <div><strong>Branch:</strong> <span th:text="${selectedUnit.branch}">Colombo Central</span></div>
+                                <div><strong>Expiry:</strong> <span class="date date--datetime" th:text="${selectedUnit.expiresAt != null ? #temporals.format(selectedUnit.expiresAt, 'dd MMM yyyy · HH:mm') : '—'}" th:title="${selectedUnit.expiresAt != null ? #temporals.format(selectedUnit.expiresAt, 'dd MMM yyyy · HH:mm') : ''}"></span></div>
+                            </div>
+                        </div>
+
+                        <!-- Active Screening Checklist (if pending) -->
+                        <form th:action="@{/portal/qa/screening}" method="post" th:if="${selectedUnit.status == 'Pending Screening'}">
+                            <input type="hidden" name="unitId" th:value="${selectedUnit.id}">
+                            
+                            <p style="font-size: 0.9rem; font-weight: 700; color: var(--oxford-blue-1); margin-bottom: 12px;">
+                                Mandatory Pathogen Screening (All 5 must pass):
+                            </p>
+
+                            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; background: #fff; padding: 12px; border: 1px solid var(--slate-200); border-radius: var(--radius-sm);">
+                                <label style="display: flex; align-items: center; gap: 10px; font-size: 0.88rem; cursor: pointer;">
+                                    <input type="checkbox" name="hiv" value="true" style="width: 18px; height: 18px; accent-color: var(--crimson);">
+                                    <span>HIV 1 &amp; 2 (Non-Reactive)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; font-size: 0.88rem; cursor: pointer;">
+                                    <input type="checkbox" name="hepB" value="true" style="width: 18px; height: 18px; accent-color: var(--crimson);">
+                                    <span>Hepatitis B HBsAg (Non-Reactive)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; font-size: 0.88rem; cursor: pointer;">
+                                    <input type="checkbox" name="hepC" value="true" style="width: 18px; height: 18px; accent-color: var(--crimson);">
+                                    <span>Hepatitis C HCV (Non-Reactive)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; font-size: 0.88rem; cursor: pointer;">
+                                    <input type="checkbox" name="syphilis" value="true" style="width: 18px; height: 18px; accent-color: var(--crimson);">
+                                    <span>Syphilis VDRL/TPHA (Non-Reactive)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; font-size: 0.88rem; cursor: pointer;">
+                                    <input type="checkbox" name="malaria" value="true" style="width: 18px; height: 18px; accent-color: var(--crimson);">
+                                    <span>Malaria Microscopic/RDT (Non-Reactive)</span>
+                                </label>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label class="form-label">Serology / Cross-match Outcome Notes</label>
+                                <textarea name="notes" rows="2" placeholder="Compatibility verified, no irregular antibodies detected..." class="form-control" style="font-size: 0.88rem;"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                Submit Screening Verification
+                            </button>
+                        </form>
+
+                        <div th:unless="${selectedUnit.status == 'Pending Screening'}" 
+                             style="padding: 16px; background: #f8fafc; border: 1px solid var(--slate-200); border-radius: var(--radius-sm); margin-bottom: 16px;">
+                            <div style="font-size: 0.9rem; color: var(--slate-600); margin-bottom: 12px;">
+                                Current Status: <strong style="color: var(--oxford-blue-1);" th:text="${selectedUnit.status}">Ready</strong>
+                            </div>
+                            
+                            <!-- Update QA Notes Form -->
+                            <form th:action="@{'/portal/qa/unit/' + ${selectedUnit.id} + '/notes'}" method="post" style="margin-bottom: 14px;">
+                                <div class="form-group" style="margin-bottom: 10px;">
+                                    <label class="form-label" style="font-size: 0.85rem;">Update Quality / Serology Notes</label>
+                                    <textarea name="notes" rows="2" class="form-control" style="font-size: 0.85rem;" th:text="${selectedUnit.qualityNotes}"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-secondary btn-sm" style="width: 100%; font-size: 0.82rem;">Update Notes</button>
+                            </form>
+
+                            <!-- Discard Blood Unit Form -->
+                            <form th:action="@{'/portal/qa/unit/' + ${selectedUnit.id} + '/discard'}" method="post" 
+                                  onsubmit="return confirm('WARNING: Are you sure you want to decommission and discard this blood unit?');">
+                                <input type="hidden" name="reason" value="Decommissioned via QA screening">
+                                <button type="submit" class="btn btn-sm" style="width: 100%; font-size: 0.82rem; color: #dc2626; border: 1px solid #fca5a5; background: #fff;">
+                                    ☣️ Log Discard / Decommission Unit
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div th:if="${selectedUnit == null}" style="text-align: center; padding: 28px 16px; color: var(--slate-400); font-size: 0.9rem;">
+                        <svg viewBox="0 0 24 24" width="36" height="36" fill="currentColor" style="opacity: 0.5; margin-bottom: 8px;"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                        <p>Select a blood unit from the dropdown above to run safety screening tests.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Units Table Section -->
+            <div class="data-table-card">
+                <div style="padding: 20px 24px; border-bottom: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="font-size: 1.15rem; color: var(--oxford-blue-1); font-weight: 700; margin: 0;">
+                        Blood Inventory Under Quality Control
+                    </h2>
+                    <span class="badge" style="background: #f1f5f9; color: var(--slate-600);" th:text="${#lists.size(units)} + ' Units Tracked'">0 Units</span>
+                </div>
+
+                <div class="table-responsive table-scroll sticky-head">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Unit ID</th>
+                                <th class="col-center">Group</th>
+                                <th>Component</th>
+                                <th>Branch</th>
+                                <th class="col-date">Expiry Date</th>
+                                <th>Safety Status</th>
+                                <th class="col-actions">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(units)}">
+                                <td colspan="7" style="text-align: center; color: var(--slate-400); padding: 32px;">No blood units found in inventory.</td>
+                            </tr>
+                            <tr th:each="u : ${units}">
+                                <td class="td-id">
+                                    <span style="font-family: monospace; font-size: 0.8rem; font-weight: 600; color: var(--royal-blue);" 
+                                          th:text="${#strings.substring(u.id, 0, 8)} + '...'"></span>
+                                </td>
+                                <td class="td-center">
+                                    <span class="blood-badge" th:text="${u.bloodGroup}">O+</span>
+                                </td>
+                                <td th:text="${u.component}" style="font-size: 0.9rem;">Whole Blood</td>
+                                <td th:text="${u.branch}" style="font-size: 0.9rem; color: var(--slate-600);">Colombo</td>
+                                <td class="td-date"><span class="date date--date" th:text="${u.expiresAt != null ? #temporals.format(u.expiresAt, 'dd MMM yyyy') : '—'}" th:title="${u.expiresAt != null ? #temporals.format(u.expiresAt, 'dd MMM yyyy') : ''}">28 Sep 2026</span></td>
+                                <td>
+                                    <span th:class="${u.status == 'Ready' or (u.status != null and u.status.contains('Approved')) ? 'badge badge-success' : ((u.status != null and u.status.contains('Pending')) ? 'badge badge-warning' : 'badge badge-danger')}"
+                                          th:text="${u.status}">Ready</span>
+                                </td>
+                                <td class="td-actions">
+                                    <div style="display: flex; gap: 6px; align-items: center; justify-content: flex-end;">
+                                        <a th:href="@{/portal/qa(unitId=${u.id})}" class="btn btn-secondary btn-sm" style="font-size: 0.78rem; padding: 3px 8px;">
+                                            Inspect
+                                        </a>
+                                        <form th:unless="${u.status != null and u.status.contains('Discarded')}" th:action="@{'/portal/qa/unit/' + ${u.id} + '/discard'}" method="post" style="display: inline;"
+                                              onsubmit="return confirm('Decommission and discard this blood unit?');">
+                                            <input type="hidden" name="reason" value="Batch Quality Discard">
+                                            <button type="submit" class="btn btn-sm" style="font-size: 0.78rem; padding: 3px 8px; color: #dc2626; border: 1px solid #fca5a5; background: #fff;" title="Discard Unit">>
+                                                🗑️ Discard
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" width="280" height="60" fill="none">
+  <defs>
+    <linearGradient id="dropGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="50%" stop-color="#dc2626"/>
+      <stop offset="100%" stop-color="#b91c1c"/>
+    </linearGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#dc2626" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <!-- Blood Drop Emblem -->
+  <g filter="url(#softGlow)" transform="translate(6, 6)">
+    <path d="M22 2 C22 2 4 23 4 33 C4 42.94 12.06 51 22 51 C31.94 51 40 42.94 40 33 C40 23 22 2 22 2 Z" fill="url(#dropGrad)"/>
+    <!-- Medical Cross inside drop -->
+    <path d="M20 23 H24 V31 H32 V35 H24 V43 H20 V35 H12 V31 H20 Z" fill="#ffffff" fill-opacity="0.95"/>
+    <!-- Little gleam highlight -->
+    <circle cx="14" cy="27" r="2.5" fill="#ffffff" fill-opacity="0.6"/>
+  </g>
+  <!-- Text Brand -->
+  <g transform="translate(56, 12)">
+    <text x="0" y="24" font-family="'Poppins', 'Segoe UI', sans-serif" font-size="22" font-weight="800" fill="#0e254e" letter-spacing="-0.5">Blood<tspan fill="#dc2626">Donation</tspan><tspan fill="#216aca" font-size="16">.lk</tspan></text>
+    <text x="2" y="38" font-family="'Roboto', 'Segoe UI', sans-serif" font-size="9.5" font-weight="600" fill="#64748b" letter-spacing="1.2">CONNECTING BLOOD DONORS</text>
+  </g>
+</svg>

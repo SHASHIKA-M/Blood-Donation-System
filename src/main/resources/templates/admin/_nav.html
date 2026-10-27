@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="adminNav(active)" class="portal-bar" th:with="u=${session.currentUser}">
+    <span class="portal-title">Admin Console</span>
+
+    <a th:if="${u != null and (u.role.name() == 'IT_ADMIN' or @authService.hasPermission(u.role, 'ADMIN_DASHBOARD'))}"
+       th:href="@{/admin/dashboard}" class="btn btn-sm"
+       th:classappend="${active == 'dashboard' ? 'btn-primary' : 'btn-secondary'}">Dashboard</a>
+
+    <a th:if="${u != null and (u.role.name() == 'IT_ADMIN' or @authService.hasPermission(u.role, 'ADMIN_DONORS'))}"
+       th:href="@{/admin/donors}" class="btn btn-sm"
+       th:classappend="${active == 'donors' ? 'btn-primary' : 'btn-secondary'}">Donors</a>
+
+    <a th:if="${u != null and (u.role.name() == 'IT_ADMIN' or @authService.hasPermission(u.role, 'ADMIN_REQUESTS'))}"
+       th:href="@{/admin/requests}" class="btn btn-sm"
+       th:classappend="${active == 'requests' ? 'btn-primary' : 'btn-secondary'}">Requests</a>
+
+    <a th:if="${u != null and (u.role.name() == 'IT_ADMIN' or @authService.hasPermission(u.role, 'ADMIN_INVENTORY'))}"
+       th:href="@{/admin/inventory}" class="btn btn-sm"
+       th:classappend="${active == 'inventory' ? 'btn-primary' : 'btn-secondary'}">Inventory &amp; QA</a>
+
+    <a th:if="${u != null and (u.role.name() == 'IT_ADMIN' or @authService.hasPermission(u.role, 'ADMIN_DELIVERIES'))}"
+       th:href="@{/admin/deliveries}" class="btn btn-sm"
+       th:classappend="${active == 'deliveries' ? 'btn-primary' : 'btn-secondary'}">Deliveries</a>
+
+    <a th:if="${u != null and (u.role.name() == 'IT_ADMIN' or @authService.hasPermission(u.role, 'ADMIN_MESSAGES'))}"
+       th:href="@{/admin/messages}" class="btn btn-sm"
+       th:classappend="${active == 'messages' ? 'btn-primary' : 'btn-secondary'}"
+       style="display: inline-flex; align-items: center; gap: 6px;">
+        <span>Messages</span>
+        <span th:if="${unreadMessages != null and unreadMessages > 0}"
+              style="background: var(--crimson); color: white; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;"
+              th:text="${unreadMessages}">3</span>
+    </a>
+
+    <!-- Return to primary portal for non-IT_ADMIN staff -->
+    <a th:if="${u != null and u.role.name() != 'IT_ADMIN'}"
+       th:href="@{${@authService.getHomePath(u)}}"
+       class="btn btn-secondary btn-sm"
+       style="margin-left: auto;">Back to Portal</a>
+
+    <a th:href="@{/admin/logout}" class="btn btn-secondary btn-sm"
+       style="color: var(--crimson); border-color: #fca5a5;"
+       th:styleappend="${u != null and u.role.name() == 'IT_ADMIN' ? 'margin-left: auto;' : ''}">Logout Console</a>
+</div>
+</body>
+</html>

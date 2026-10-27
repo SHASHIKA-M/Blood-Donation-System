@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Manage Donors - Admin')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('admin')}"></header>
+
+    <main class="container" style="padding-block: 40px 80px;">
+        <!-- Admin Navigation Bar -->
+        <div th:replace="~{admin/_nav :: adminNav('donors')}"></div>
+
+        <!-- Alerts -->
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <div class="admin-split" style="display: grid; grid-template-columns: 320px 1fr; gap: 28px;">
+            <!-- Left Column: Search & Quick Register -->
+            <aside>
+                <!-- Filter Form Card -->
+                <div class="form-card" style="margin: 0 0 20px 0; padding: 22px;">
+                    <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 14px;">Filter Donors</h3>
+                    <form th:action="@{/admin/donors}" method="get" style="display: flex; flex-direction: column; gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Name or Phone</label>
+                            <input type="text" name="q" class="form-control" th:value="${q}" placeholder="Type search term...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Blood Group</label>
+                            <select name="bloodGroup" class="form-select">
+                                <option value="Any" th:selected="${bloodGroup == 'Any'}">All Groups</option>
+                                <option th:each="g : ${ {'A+','A-','B+','B-','AB+','AB-','O+','O-'} }" th:value="${g}" th:selected="${g == bloodGroup}" th:text="${g}"></option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">City</label>
+                            <input type="text" name="city" class="form-control" th:value="${city}" placeholder="Colombo, Kandy...">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm" style="width: 100%;">Filter Donors</button>
+                        <a th:href="@{/admin/donors}" class="btn btn-secondary btn-sm" style="text-align: center;">Reset</a>
+                    </form>
+                </div>
+
+                <!-- Add Donor Card -->
+                <div class="form-card" style="margin: 0; padding: 22px; border-top: 3px solid var(--success);">
+                    <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 14px;">Register New Donor</h3>
+                    <form th:action="@{/admin/donors/new}" method="post" th:object="${newDonor}" style="display: flex; flex-direction: column; gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" th:field="*{name}" class="form-control" required placeholder="Aman Silva">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number *</label>
+                            <input type="tel" th:field="*{phone}" class="form-control" required placeholder="0771234567" oninput="formatPhoneNumber(this)">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <div class="form-group">
+                                <label class="form-label">Blood Group</label>
+                                <select th:field="*{bloodGroup}" class="form-select" required>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">City</label>
+                                <input type="text" th:field="*{city}" class="form-control" required placeholder="Colombo">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Province</label>
+                            <select th:field="*{province}" class="form-select">
+                                <option value="Western Province">Western Province</option>
+                                <option value="Central Province">Central Province</option>
+                                <option value="Southern Province">Southern Province</option>
+                                <option value="Northern Province">Northern Province</option>
+                                <option value="Eastern Province">Eastern Province</option>
+                                <option value="North Western Province">North Western Province</option>
+                                <option value="North Central Province">North Central Province</option>
+                                <option value="Uva Province">Uva Province</option>
+                                <option value="Sabaragamuwa Province">Sabaragamuwa Province</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Availability</label>
+                            <select th:field="*{availability}" class="form-select">
+                                <option value="Available">Available</option>
+                                <option value="Unavailable">Unavailable</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-blue btn-sm" style="width: 100%;">Create Donor</button>
+                    </form>
+                </div>
+            </aside>
+
+            <!-- Right Column: Donors List -->
+            <section>
+                <div class="form-card" style="margin: 0; padding: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="font-size: 1.35rem; color: var(--oxford-blue-1); font-weight: 800;">
+                            Donors Registry (<span th:text="${#lists.size(donors)}">0</span>)
+                        </h2>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(donors)}" style="padding: 40px; text-align: center; color: var(--slate-500);">
+                        No donors match the current filters.
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(donors)}" style="display: flex; flex-direction: column; gap: 16px;">
+                        <div th:each="d : ${donors}" class="donor-card" style="padding: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+                                <div style="display: flex; align-items: center; gap: 14px;">
+                                    <div class="blood-badge sm" th:text="${d.bloodGroup}">O+</div>
+                                    <div>
+                                        <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); font-weight: 700;" th:text="${d.name}">Donor Name</h3>
+                                        <div style="font-size: 0.88rem; color: var(--slate-500); display: flex; gap: 12px; margin-top: 2px;">
+                                            <span>Location: <strong th:text="${d.city}">Colombo</strong></span>
+                                            <span>Phone: <strong th:text="${d.phone}">0771234567</strong></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="status-badge" th:classappend="${#strings.equalsIgnoreCase(d.availability, 'Available') ? 'available' : 'unavailable'}" th:text="${d.availability}">Available</span>
+                                </div>
+                            </div>
+
+                            <p th:if="${d.notes != null and !d.notes.isBlank()}" style="font-size: 0.85rem; color: var(--slate-600); background: var(--slate-50); padding: 8px 12px; border-radius: var(--radius-sm); margin-top: 12px;" th:text="${d.notes}">Notes</p>
+
+                            <!-- Actions -->
+                            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; pt-2; border-top: 1px solid var(--slate-100); padding-top: 10px;">
+                                <a th:href="@{/admin/donors/{id}/edit(id=${d.id})}" class="btn btn-secondary btn-sm">Edit</a>
+                                <form th:action="@{/admin/donors/{id}/delete(id=${d.id})}" method="post" onsubmit="return confirm('Permanently delete this donor?');" style="margin: 0;">
+                                    <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--crimson); border-color: #fca5a5;">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

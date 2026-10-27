@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Blood Availability')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('availability')}"></header>
+
+    <!-- Header Hero Banner -->
+    <section class="search-header-hero hero-photo hero-photo--stock">
+        <div class="container">
+            <p class="section-subtitle" style="color: var(--carolina-blue); justify-content: center;">QA Verified Inventory</p>
+            <h1>Live Blood Availability</h1>
+            <p style="color: #cbd5e1; max-width: 600px; margin: 0 auto; font-size: 1rem;">
+                Real-time tracking of screened, QA-approved blood units available across national blood banks and collection centers.
+            </p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container" style="padding-bottom: 70px;">
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <!-- Stock by blood group -->
+        <div class="stock-grid" style="margin-top: -30px; position: relative; z-index: 10; margin-bottom: 36px;">
+            <a th:each="entry : ${stockByGroup}" th:href="@{/availability(bloodGroup=${entry.key})}" class="stock-card"
+               th:classappend="${entry.value == 0 ? 'out' : (entry.value <= 5 ? 'critical' : (entry.value <= 10 ? 'low' : ''))}"
+               th:title="${entry.key} + ' stock'">
+                <div class="blood-badge" th:text="${entry.key}">O+</div>
+                <div>
+                    <div class="stock-count" th:text="${entry.value}">0</div>
+                    <div class="stock-sub" th:text="${entry.value == 0 ? 'Out of stock' : 'units available'}">units available</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Filter Card -->
+        <div class="search-filter-card">
+            <div class="photo banner-photo" style="margin-top: 0; margin-bottom: 22px; min-height: 150px;">
+                <img th:src="@{/images/photos/collection-monitor.jpg}" alt="A blood collection bag resting on a donation monitoring machine" width="1400" height="360" loading="lazy" decoding="async">
+                <div class="banner-photo-content">
+                    <h3>Every Unit Is Weighed And Monitored During Collection</h3>
+                    <p>Collection bags sit on calibrated monitors so the exact volume is recorded, then sealed, labelled and
+                        moved straight into the cold chain.</p>
+                </div>
+            </div>
+            <div class="photo banner-photo" style="margin-top: 0; margin-bottom: 22px; min-height: 150px;">
+                <img th:src="@{/images/photos/blood-bags-labels.jpg}" alt="Labelled blood bags stored for transfusion at a blood bank" width="1400" height="360" loading="lazy" decoding="async">
+                <div class="banner-photo-content">
+                    <h3>QA-Screened Cold Chain, Ready Around The Clock</h3>
+                    <p>Every unit below has cleared HIV, Hepatitis B/C, syphilis and malaria screening and is stored under monitored
+                        refrigeration until a hospital calls for it.</p>
+                </div>
+            </div>
+            <form method="get" th:action="@{/availability}" style="display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap;">
+                <div class="form-group" style="flex: 1; min-width: 220px; margin: 0;">
+                    <label for="avail-bloodGroup" class="form-label">Filter by Blood Group:</label>
+                    <select id="avail-bloodGroup" name="bloodGroup" class="form-select">
+                        <option value="">All Blood Groups</option>
+                        <option th:each="g : ${ {'A+','A-','B+','B-','AB+','AB-','O+','O-'} }" th:value="${g}" th:selected="${g == bloodGroup}" th:text="${g}"></option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" type="submit" style="height: 48px; padding-inline: 24px;">Check Availability</button>
+                <a th:href="@{/availability}" class="btn btn-secondary" style="height: 48px;" title="Reset filter">Reset</a>
+            </form>
+        </div>
+
+        <!-- Units Display -->
+        <div style="margin-top: 36px;">
+            <div th:if="${#lists.isEmpty(units)}" style="padding: 50px 20px; text-align: center; background: var(--white); border-radius: var(--radius-md); border: 1.5px dashed var(--slate-300);">
+                <img th:src="@{/images/blood-icon.svg}" alt="Blood Icon" width="48" height="48" style="margin: 0 auto 12px auto; opacity: 0.7;">
+                <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--oxford-blue-1); margin-bottom: 6px;">No Screened Units Currently Available</h3>
+                <p style="color: var(--slate-500); max-width: 500px; margin: 0 auto 20px auto; font-size: 0.95rem;">
+                    No approved units match your selected blood group right now. If there is an emergency, please post an urgent blood request to alert volunteer donors.
+                </p>
+                <div style="display: flex; justify-content: center; gap: 12px;">
+                    <a class="btn btn-primary btn-sm" th:href="@{/requests}">Post Urgent Request</a>
+                    <a class="btn btn-secondary btn-sm" th:href="@{/search}">Find Donors Directly</a>
+                </div>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(units)}">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 style="font-size: 1.4rem; color: var(--oxford-blue-1);">
+                        Approved Blood Units In Stock (<span th:text="${#lists.size(units)}">0</span>)
+                    </h2>
+                    <span style="font-size: 0.85rem; color: var(--slate-500);">All units verified HIV, Hep B/C, Syphilis, &amp; Malaria Non-Reactive</span>
+                </div>
+
+                <div class="table-responsive table-scroll sticky-head">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="col-center">Blood Group</th>
+                                <th>Component</th>
+                                <th>Storage Center / Branch</th>
+                                <th class="col-date">Expiry Date</th>
+                                <th class="col-center">Quality Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="unit : ${units}">
+                                <td class="td-center">
+                                    <span class="blood-badge sm" th:text="${unit.bloodGroup}">A+</span>
+                                </td>
+                                <td>
+                                    <strong th:text="${unit.component}">Whole Blood</strong>
+                                </td>
+                                <td th:text="${unit.branch}">Colombo Central</td>
+                                <td class="td-date">
+                                    <span class="date date--date" th:text="${unit.expiresAt != null ? #temporals.format(unit.expiresAt, 'dd MMM yyyy') : '—'}" th:title="${unit.expiresAt != null ? #temporals.format(unit.expiresAt, 'dd MMM yyyy') : ''}">25 Aug 2026</span>
+                                </td>
+                                <td class="td-center">
+                                    <span class="status-badge available">Approved - Available</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

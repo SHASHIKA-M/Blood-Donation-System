@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Blood Bank Manager Portal')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('admin')}"></header>
+
+    <main class="container wide" style="padding-block: 40px 80px;">
+        <!-- Stakeholder Navigation -->
+        <div th:replace="~{portal/_nav :: portalNav('manager')}"></div>
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <!-- Page Header -->
+        <div th:replace="~{portal/_hero :: portalHero('/images/photos/blood-bags.jpg','Blood Bank Management','Blood Bank Stock & Allocation Dashboard','Real-time multi-branch inventory tracking, low-stock alerts, and executive authorization for clinical requisitions.')}"></div>
+
+        <!-- Low Stock Alerts Warning Banner -->
+        <div th:if="${!#lists.isEmpty(lowStockAlerts)}" 
+             style="background: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid var(--crimson); border-radius: var(--radius-sm); padding: 18px 24px; margin-bottom: 32px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="var(--crimson)"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                <strong style="color: #991b1b; font-size: 1.05rem;">Critical Low-Stock Alerts Triggered</strong>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                <div th:each="a : ${lowStockAlerts}" th:if="${#lists.contains(activeBranches, a.branch)}" 
+                     style="background: #fff; border: 1px solid #fca5a5; padding: 6px 14px; border-radius: 20px; font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
+                    <span class="blood-badge" th:text="${a.bloodGroup}" style="font-size: 0.8rem; padding: 2px 8px;">A+</span>
+                    <span style="font-weight: 600; color: #991b1b;" th:text="${a.component}">Whole Blood</span>
+                    <span style="color: var(--slate-600);" th:text="'@ ' + ${a.branch}">@ Colombo Central</span>
+                    <span class="badge badge-danger" th:text="${a.count} + ' Units left'">1 Unit left</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Stock by Group, Component & Branch -->
+        <div class="data-table-card" style="margin-bottom: 32px;">
+            <div style="padding: 20px 24px; border-bottom: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h2 style="font-size: 1.2rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 2px;">
+                        Live Stock by Group, Component &amp; Branch
+                    </h2>
+                    <p style="color: var(--slate-500); font-size: 0.85rem; margin: 0;">Verified safe blood inventory available for clinical allocation</p>
+                </div>
+
+                <!-- Branch Filter Form -->
+                <form method="get" th:action="@{/portal/manager}" style="display: flex; gap: 8px; align-items: center;">
+                    <select name="branch" class="form-select" style="font-size: 0.88rem; width: 220px;" onchange="this.form.submit()">
+                        <option th:each="b : ${allBranches}"
+                                th:value="${b}"
+                                th:text="${#lists.contains(activeBranches, b) ? b : b + ' (Disabled)'}"
+                                th:disabled="${!#lists.contains(activeBranches, b)}"
+                                th:selected="${b == branchFilter}">
+                            Colombo Central
+                        </option>
+                    </select>
+                    <button class="btn btn-secondary btn-sm" type="submit">Filter</button>
+                    <a th:href="@{/portal/manager}" class="btn btn-secondary btn-sm" style="color: var(--slate-500);">Reset</a>
+                </form>
+            </div>
+
+            <div class="table-responsive table-scroll sticky-head">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="col-center">Blood Group</th>
+                            <th>Component Type</th>
+                            <th>Storage Facility</th>
+                            <th class="col-center">Units Available</th>
+                            <th class="col-center">Inventory Status</th>
+                            <th class="col-actions">Update Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(stockSummary)}">
+                            <td colspan="6" style="text-align: center; color: var(--slate-400); padding: 32px;">No stock records found.</td>
+                        </tr>
+                        <tr th:each="s : ${stockSummary}" th:if="${#lists.contains(activeBranches, s.branch)}">
+                            <td><span class="blood-badge" th:text="${s.bloodGroup}">O+</span></td>
+                            <td th:text="${s.component}" style="font-weight: 600;">Whole Blood</td>
+                            <td th:text="${s.branch}" style="color: var(--slate-600);">Colombo Central</td>
+                            <td>
+                                <strong style="font-size: 1.1rem; color: var(--oxford-blue-1);" th:text="${s.count}">14</strong>
+                                <span style="font-size: 0.8rem; color: var(--slate-500);">bags</span>
+                            </td>
+                            <td>
+                                <span th:class="${s.status == 'Adequate' ? 'badge badge-success' : (s.status == 'Low' ? 'badge badge-warning' : 'badge badge-danger')}"
+                                      th:text="${s.status}">Adequate</span>
+                            </td>
+                            <td>
+                                <form th:action="@{/portal/manager/stock/adjust}" method="post"
+                                      style="display: flex; gap: 6px; align-items: center;"
+                                      onsubmit="return confirm('Apply this quantity change to live stock?');">
+                                    <input type="hidden" name="bloodGroup" th:value="${s.bloodGroup}">
+                                    <input type="hidden" name="component" th:value="${s.component}">
+                                    <input type="hidden" name="branch" th:value="${s.branch}">
+                                    <input type="number" name="delta" value="0" min="-100" max="100" required
+                                           title="Use + to add stock, - to write off (e.g. -3)"
+                                           class="form-control" style="width: 76px; padding: 6px 8px; font-size: 0.85rem;">
+                                    <button type="submit" class="btn btn-secondary btn-sm" style="white-space: nowrap;">Apply</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Register Blood Stock Batch Intake Card (Create) -->
+        <div class="form-card" style="margin: 0 0 32px 0; padding: 24px; border-top: 3px solid var(--royal-blue);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div>
+                    <h2 style="font-size: 1.2rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 2px;">
+                        Register Incoming Blood Stock Batch
+                    </h2>
+                    <p style="color: var(--slate-500); font-size: 0.85rem; margin: 0;">Record newly collected blood donations into central blood bank inventory</p>
+                </div>
+            </div>
+
+            <form th:action="@{/portal/manager/stock/add}" method="post">
+                <div class="form-grid-3" style="margin-bottom: 12px;">
+                    <div class="form-group">
+                        <label class="form-label">Blood Group *</label>
+                        <select name="bloodGroup" required class="form-select">
+                            <option th:each="g : ${ {'A+','A-','B+','B-','AB+','AB-','O+','O-'} }" th:value="${g}" th:text="${g}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Component Type *</label>
+                        <select name="component" required class="form-select">
+                            <option value="Whole Blood">Whole Blood</option>
+                            <option value="Plasma">Fresh Frozen Plasma</option>
+                            <option value="Platelets">Platelets</option>
+                            <option value="Red Cells">Packed Red Cells</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Storage Facility / Branch *</label>
+                        <select name="branch" required class="form-select">
+                            <option th:each="b : ${allBranches}"
+                                    th:value="${b}"
+                                    th:text="${#lists.contains(activeBranches, b) ? b : b + ' (Disabled)'}"
+                                    th:disabled="${!#lists.contains(activeBranches, b)}"
+                                    th:selected="${#lists.contains(activeBranches, b) and b == activeBranches[0]}">
+                                Colombo Central
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-grid-2" style="margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Batch Units Quantity *</label>
+                        <input type="number" name="units" min="1" max="50" value="5" required class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Shelf Life / Expiry Days *</label>
+                        <input type="number" name="expiryDays" min="5" max="365" value="35" required class="form-control">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    + Register Blood Stock Batch
+                </button>
+            </form>
+        </div>
+
+        <!-- Record Donation Collection from Donor (real chain of custody) -->
+        <div class="form-card" style="margin: 0 0 32px 0; padding: 24px; border-top: 3px solid #16a34a;">
+            <h2 style="font-size: 1.2rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 2px;">
+                Record Donation Collection from Donor
+            </h2>
+            <p style="color: var(--slate-500); font-size: 0.85rem; margin: 0 0 14px 0;">Collect a unit directly from an eligible registered donor — creates a Pending Screening unit linked to them (120-day gap enforced)</p>
+
+            <form th:action="@{/portal/manager/collect}" method="post">
+                <div class="form-grid-3" style="margin-bottom: 12px;">
+                    <div class="form-group">
+                        <label class="form-label">Donor *</label>
+                        <select name="donorPhone" required class="form-select">
+                            <option value="">Select donor...</option>
+                            <option th:each="d : ${donors}" th:value="${d.phone}"
+                                    th:text="${d.name} + ' — ' + ${d.phone} + ' (' + ${d.bloodGroup} + ')'"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Component *</label>
+                        <select name="component" required class="form-select">
+                            <option value="Whole Blood">Whole Blood</option>
+                            <option value="Plasma">Fresh Frozen Plasma</option>
+                            <option value="Platelets">Platelets</option>
+                            <option value="Red Cells">Packed Red Cells</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Collection Branch *</label>
+                        <select name="branch" required class="form-select">
+                            <option th:each="b : ${allBranches}"
+                                    th:value="${b}"
+                                    th:text="${#lists.contains(activeBranches, b) ? b : b + ' (Disabled)'}"
+                                    th:disabled="${!#lists.contains(activeBranches, b)}"
+                                    th:selected="${#lists.contains(activeBranches, b) and b == activeBranches[0]}">
+                                Colombo Central
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Collection Location (optional)</label>
+                    <input type="text" name="location" placeholder="e.g. Mobile Camp - Galle Face" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary" style="background: #16a34a; border-color: #16a34a;">
+                    Record Collection
+                </button>
+            </form>
+        </div>
+
+        <!-- Upcoming Donation Appointments -->
+        <div class="form-card" style="margin: 0 0 32px 0; padding: 24px; border-top: 3px solid var(--carolina-blue);">
+            <h2 style="font-size: 1.2rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 2px;">
+                Upcoming Donation Appointments
+            </h2>
+            <p style="color: var(--slate-500); font-size: 0.85rem; margin: 0 0 14px 0;">Donor-booked slots — mark Completed after collection, or Cancel no-shows</p>
+
+            <div th:if="${#lists.isEmpty(upcomingAppointments)}" style="padding: 20px; text-align: center; background: var(--slate-50); border-radius: var(--radius-md); color: var(--slate-500); font-size: 0.9rem;">
+                No upcoming appointments booked.
+            </div>
+
+            <div th:unless="${#lists.isEmpty(upcomingAppointments)}" class="table-responsive table-scroll sticky-head">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Donor</th>
+                            <th class="col-center">Blood Group</th>
+                            <th>Branch</th>
+                            <th class="col-datetime">Scheduled At</th>
+                            <th class="col-actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="appt : ${upcomingAppointments}">
+                            <td>
+                                <strong th:text="${appt.donorName}">Name</strong><br>
+                                <small style="color: var(--slate-500);" th:text="${appt.phone}">Phone</small>
+                            </td>
+                            <td class="td-center"><span class="blood-badge sm" th:text="${appt.bloodGroup}">O+</span></td>
+                            <td th:text="${appt.branch}">Branch</td>
+                            <td class="td-datetime"><span class="date date--datetime" th:text="${appt.scheduledAt != null ? #temporals.format(appt.scheduledAt, 'dd MMM yyyy · HH:mm') : '—'}" th:title="${appt.scheduledAt != null ? #temporals.format(appt.scheduledAt, 'dd MMM yyyy · HH:mm') : ''}">Date</span></td>
+                            <td class="td-actions">
+                                <div style="display: flex; gap: 6px;">
+                                    <form th:action="@{/portal/manager/appointments/{id}/status(id=${appt.id})}" method="post" style="display: inline;">
+                                        <input type="hidden" name="status" value="Completed">
+                                        <button type="submit" class="btn btn-primary btn-sm">Completed</button>
+                                    </form>
+                                    <form th:action="@{/portal/manager/appointments/{id}/status(id=${appt.id})}" method="post" style="display: inline;"
+                                          onsubmit="return confirm('Cancel this appointment?');">
+                                        <input type="hidden" name="status" value="Cancelled">
+                                        <button type="submit" class="btn btn-secondary btn-sm">Cancel</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Approval Actions: 2-Column Grid -->
+        <div class="form-grid-2" style="gap: 28px; align-items: start;">
+            <!-- Pending Patient Requests -->
+            <div class="form-card" style="margin: 0; padding: 24px; border-top: 3px solid var(--crimson);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); font-weight: 700; margin: 0;">
+                        Patient Emergency Requests
+                    </h3>
+                    <span class="badge badge-warning" th:text="${#lists.size(pendingRequests)} + ' Pending'">0 Pending</span>
+                </div>
+
+                <div th:if="${#lists.isEmpty(pendingRequests)}" style="padding: 24px; background: #f8fafc; border-radius: var(--radius-sm); text-align: center; color: var(--slate-400); font-size: 0.9rem;">
+                    No pending patient requests awaiting approval.
+                </div>
+
+                <div th:each="r : ${pendingRequests}" class="req-card">
+                    <div class="req-info">
+                        <div class="req-title" th:text="${r.patientName}" th:title="${r.patientName}">Patient Name</div>
+                        <div class="req-meta">
+                            <span class="blood-badge sm" th:text="${r.bloodGroup}">A+</span>
+                            <span th:text="${r.units} + ' units'">2 units</span>
+                            <span th:class="${r.urgency == 'Emergency' ? 'badge badge-danger' : 'badge badge-warning'}"
+                                  style="font-size: 0.75rem;" th:text="${r.urgency}">Emergency</span>
+                        </div>
+                    </div>
+                    <div class="req-actions">
+                        <form th:action="@{/portal/manager/approve/{id}(id=${r.id})}" method="post">
+                            <button type="submit" class="btn btn-primary btn-sm" style="background: #16a34a; border-color: #16a34a; font-size: 0.78rem; padding: 3px 8px;">
+                                ✓ Approve
+                            </button>
+                        </form>
+                        <form th:action="@{/portal/manager/reject/{id}(id=${r.id})}" method="post"
+                              onsubmit="return confirm('Reject this emergency request?');">
+                            <input type="hidden" name="reason" value="Rejected by Manager review">
+                            <button type="submit" class="btn btn-sm" style="font-size: 0.78rem; padding: 3px 8px; color: #d97706; border: 1px solid #fcd34d; background: #fff;">
+                                ✗ Reject
+                            </button>
+                        </form>
+                        <form th:action="@{/portal/manager/request/{id}/delete(id=${r.id})}" method="post"
+                              onsubmit="return confirm('Permanently remove this request?');">
+                            <button type="submit" class="btn btn-sm" style="font-size: 0.78rem; padding: 3px 8px; color: #dc2626; border: 1px solid #fca5a5; background: #fff;">
+                                🗑️
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hospital Clinical Requisitions -->
+            <div class="form-card" style="margin: 0; padding: 24px; border-top: 3px solid var(--royal-blue);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); font-weight: 700; margin: 0;">
+                        Hospital Requisitions Awaiting Approval
+                    </h3>
+                    <span class="badge badge-info" th:text="${#lists.size(submittedRequisitions)} + ' Submitted'">0 Submitted</span>
+                </div>
+
+                <div th:if="${#lists.isEmpty(submittedRequisitions)}" style="padding: 24px; background: #f8fafc; border-radius: var(--radius-sm); text-align: center; color: var(--slate-400); font-size: 0.9rem;">
+                    No submitted hospital clinical requisitions awaiting authorization.
+                </div>
+
+                <div th:each="r : ${submittedRequisitions}" class="req-card">
+                    <div class="req-info">
+                        <div class="req-title">
+                            <span th:text="${r.patientName}">Ward 4B</span>
+                            <span class="req-sub" th:text="'@ ' + ${r.hospital}">@ National Hospital</span>
+                        </div>
+                        <div class="req-meta">
+                            <span class="blood-badge sm" th:text="${r.bloodGroup}">B+</span>
+                            <span th:text="${r.units} + ' units'">3 units</span>
+                            <span th:if="${r.urgency != null}" th:class="${#strings.equalsIgnoreCase(r.urgency, 'Emergency') || #strings.equalsIgnoreCase(r.urgency, 'Critical') ? 'badge badge-danger' : 'badge badge-warning'}"
+                                  style="font-size: 0.75rem;" th:text="${r.urgency}">Critical</span>
+                        </div>
+                    </div>
+                    <div class="req-actions">
+                        <form th:action="@{/portal/manager/approve/{id}(id=${r.id})}" method="post">
+                            <button type="submit" class="btn btn-primary btn-sm" style="font-size: 0.78rem; padding: 3px 8px;">
+                                ✓ Authorize
+                            </button>
+                        </form>
+                        <form th:action="@{/portal/manager/reject/{id}(id=${r.id})}" method="post"
+                              onsubmit="return confirm('Reject this hospital requisition?');">
+                            <input type="hidden" name="reason" value="Inventory allocation rejected">
+                            <button type="submit" class="btn btn-sm" style="font-size: 0.78rem; padding: 3px 8px; color: #d97706; border: 1px solid #fcd34d; background: #fff;">
+                                ✗ Reject
+                            </button>
+                        </form>
+                        <form th:action="@{/portal/manager/request/{id}/delete(id=${r.id})}" method="post"
+                              onsubmit="return confirm('Permanently remove this requisition?');">
+                            <button type="submit" class="btn btn-sm" style="font-size: 0.78rem; padding: 3px 8px; color: #dc2626; border: 1px solid #fca5a5; background: #fff;">
+                                🗑️
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

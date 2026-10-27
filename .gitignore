@@ -1,0 +1,14 @@
+# Build + IDE (regenerated automatically)
+target/
+.idea/
+*.iml
+.vscode/
+*.log
+app-run.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Env secrets (copy .env.example instead)
+.env

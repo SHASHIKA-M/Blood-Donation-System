@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Delivery Coordination Portal')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('admin')}"></header>
+
+    <main class="container wide" style="padding-block: 40px 80px;">
+        <!-- Portal Nav -->
+        <div th:replace="~{portal/_nav :: portalNav('delivery')}"></div>
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <!-- Page Header -->
+        <div th:replace="~{portal/_hero :: portalHero('/images/photos/collection-monitor.jpg','Logistics & Transport','Cold-Chain Blood Delivery Coordination','Manage refrigerated transport, register fleet couriers, and dispatch approved blood supplies.')}"></div>
+
+        <!-- Schedule Dispatch Card -->
+        <div class="form-card" style="margin: 0 0 32px 0; padding: 28px; border-top: 3px solid var(--crimson);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <div>
+                    <h2 style="font-size: 1.25rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 4px;">
+                        Schedule Blood Dispatch
+                    </h2>
+                    <p style="color: var(--slate-500); font-size: 0.88rem; margin: 0;">
+                        Assign courier and certified refrigerated vehicle to approved hospital requisitions.
+                    </p>
+                </div>
+                <span class="badge badge-info" th:text="${#lists.size(approvedRequests)} + ' Requisitions Awaiting Dispatch'">0 Awaiting</span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(approvedRequests)}" style="padding: 24px; background: #f8fafc; border-radius: var(--radius-sm); text-align: center; color: var(--slate-500); font-size: 0.95rem;">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor" style="opacity: 0.4; margin-bottom: 6px;"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+                <p>All approved clinical requisitions have been scheduled for dispatch. No pending requests awaiting transport.</p>
+            </div>
+
+            <form th:unless="${#lists.isEmpty(approvedRequests)}" th:action="@{/portal/delivery/schedule}" method="post">
+                <div class="form-grid-2" style="margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Approved Blood Requisition *</label>
+                        <select name="requestId" required class="form-select">
+                            <option th:each="r : ${approvedRequests}" th:value="${r.id}"
+                                    th:text="${r.patientName + ' — ' + r.bloodGroup + ' (' + r.units + ' units) @ ' + r.hospital}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Scheduled Departure Date &amp; Time *</label>
+                        <input type="datetime-local" name="scheduledAt" required class="form-control"
+                               th:value="${#temporals.format(#temporals.createNow().plusHours(1), 'yyyy-MM-dd') + 'T' + #temporals.format(#temporals.createNow().plusHours(1), 'HH:mm')}">
+                    </div>
+                </div>
+
+                <div class="form-grid-2" style="margin-bottom: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Designated Courier Driver *</label>
+                        <select name="courierName" required class="form-select">
+                            <option value="">-- Select Active Courier --</option>
+                            <option th:each="c : ${availableCouriers}" th:value="${c.name}" th:text="${c.name + ' (Zone: ' + c.routeZone + ')'}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Refrigerated Transport Vehicle *</label>
+                        <select name="vehicleNumber" required class="form-select">
+                            <option value="">-- Select Fleet Vehicle --</option>
+                            <option th:each="v : ${availableVehicles}" th:value="${v.vehicleNumber}" th:text="${v.vehicleNumber + ' — ' + v.type}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label">Route Sequence / Cold-Chain Storage Notes</label>
+                    <input name="notes" placeholder="e.g. Temperature set to 4°C, priority siren delivery via Expressway" class="form-control">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg">
+                    Schedule Blood Dispatch
+                </button>
+            </form>
+        </div>
+
+        <!-- Fleet & Personnel Registration: 2-Column Grid -->
+        <div class="form-grid-2" style="gap: 28px; margin-bottom: 32px; align-items: start;">
+            <!-- Register Vehicle -->
+            <div class="form-card" style="margin: 0; padding: 24px; border-top: 3px solid var(--royal-blue);">
+                <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 14px;">
+                    Register Delivery Vehicle
+                </h3>
+                <form th:action="@{/portal/delivery/vehicles}" method="post" th:object="${newVehicle}" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label class="form-label">Vehicle Registration Number *</label>
+                        <input th:field="*{vehicleNumber}" required placeholder="WP-CAB-1234" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Vehicle Type / Cold-Chain Spec *</label>
+                        <input th:field="*{type}" required placeholder="Refrigerated Van (2-6°C)" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Assigned Route Zone</label>
+                        <input th:field="*{routeZone}" placeholder="Western Province / Colombo Core" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-secondary btn-sm" style="align-self: flex-start;">
+                        + Register Vehicle
+                    </button>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="data-table table-compact">
+                        <thead>
+                            <tr>
+                                <th>Plate #</th>
+                                <th>Type</th>
+                                <th>Zone</th>
+                                <th class="col-center">Status</th>
+                                <th class="col-actions">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(vehicles)}">
+                                <td colspan="5" style="text-align: center; color: var(--slate-400); font-size: 0.85rem;">No vehicles registered.</td>
+                            </tr>
+                            <tr th:each="v : ${vehicles}">
+                                <td class="td-id" style="font-weight: 700; font-size: 0.85rem;" th:text="${v.vehicleNumber}"></td>
+                                <td th:text="${v.type}" style="font-size: 0.85rem;"></td>
+                                <td th:text="${v.routeZone}" style="font-size: 0.85rem; color: var(--slate-600);"></td>
+                                <td class="td-center">
+                                    <span th:class="${v.status == 'Available' ? 'badge badge-success' : 'badge badge-warning'}" th:text="${v.status}">Active</span>
+                                </td>
+                                <td class="td-actions">
+                                    <div style="display: flex; gap: 4px; align-items: center;">
+                                        <form th:action="@{'/portal/delivery/vehicles/' + ${v.id} + '/status'}" method="post" style="display: inline;">
+                                            <input type="hidden" name="status" th:value="${v.status == 'Available' ? 'Maintenance' : 'Available'}">
+                                            <button type="submit" class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;"
+                                                    th:text="${v.status == 'Available' ? '🔧 Service' : '✓ Ready'}">
+                                                Toggle
+                                            </button>
+                                        </form>
+                                        <form th:action="@{'/portal/delivery/vehicles/' + ${v.id} + '/delete'}" method="post" style="display: inline;"
+                                              onsubmit="return confirm('Remove this vehicle from the delivery fleet?');">
+                                            <button type="submit" class="btn btn-sm" style="font-size: 0.72rem; padding: 2px 6px; color: #dc2626; border: 1px solid #fca5a5; background: #fff;">
+                                                🗑️
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Register Courier -->
+            <div class="form-card" style="margin: 0; padding: 24px; border-top: 3px solid var(--royal-blue);">
+                <h3 style="font-size: 1.15rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 14px;">
+                    Register Delivery Courier
+                </h3>
+                <form th:action="@{/portal/delivery/couriers}" method="post" th:object="${newCourier}" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                    <div class="form-grid-2" style="gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Driver Full Name *</label>
+                            <input th:field="*{name}" required placeholder="Sunil Perera" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Driver License # *</label>
+                            <input th:field="*{licenseNumber}" required placeholder="B-8472918" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-grid-2" style="gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Emergency Phone *</label>
+                            <input th:field="*{contact}" required placeholder="077-1234567" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Operating Route Zone</label>
+                            <input th:field="*{routeZone}" placeholder="Western Province" class="form-control">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-secondary btn-sm" style="align-self: flex-start;">
+                        + Register Courier
+                    </button>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="data-table table-compact">
+                        <thead>
+                            <tr>
+                                <th>Driver Name</th>
+                                <th>License #</th>
+                                <th>Contact</th>
+                                <th class="col-center">Status</th>
+                                <th class="col-actions">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(couriers)}">
+                                <td colspan="5" style="text-align: center; color: var(--slate-400); font-size: 0.85rem;">No couriers registered.</td>
+                            </tr>
+                            <tr th:each="c : ${couriers}">
+                                <td style="font-weight: 700; font-size: 0.85rem;" th:text="${c.name}"></td>
+                                <td class="td-id" th:text="${c.licenseNumber}" style="font-size: 0.85rem; font-family: monospace;"></td>
+                                <td th:text="${c.contact}" style="font-size: 0.85rem; color: var(--slate-600); white-space: nowrap;"></td>
+                                <td class="td-center">
+                                    <span th:class="${c.status == 'Available' ? 'badge badge-success' : 'badge badge-warning'}" th:text="${c.status}">Active</span>
+                                </td>
+                                <td class="td-actions">
+                                    <div style="display: flex; gap: 4px; align-items: center;">
+                                        <form th:action="@{'/portal/delivery/couriers/' + ${c.id} + '/status'}" method="post" style="display: inline;">
+                                            <input type="hidden" name="status" th:value="${c.status == 'Available' ? 'Off Duty' : 'Available'}">
+                                            <button type="submit" class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 6px;"
+                                                    th:text="${c.status == 'Available' ? 'Off Duty' : 'On Duty'}">
+                                                Toggle
+                                            </button>
+                                        </form>
+                                        <form th:action="@{'/portal/delivery/couriers/' + ${c.id} + '/delete'}" method="post" style="display: inline;"
+                                              onsubmit="return confirm('Remove this courier from directory?');">
+                                            <button type="submit" class="btn btn-sm" style="font-size: 0.72rem; padding: 2px 6px; color: #dc2626; border: 1px solid #fca5a5; background: #fff;">
+                                                🗑️
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Deliveries Table -->
+        <div class="data-table-card">
+            <div style="padding: 20px 24px; border-bottom: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <h2 style="font-size: 1.15rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 2px;">
+                        Blood Dispatch Orders &amp; In-Transit Monitoring
+                    </h2>
+                    <p style="color: var(--slate-500); font-size: 0.85rem; margin: 0;">Live tracking of cold-chain transit to hospitals</p>
+                </div>
+                <span class="badge" style="background: #f1f5f9; color: var(--slate-600); white-space: nowrap;" th:text="${#lists.size(deliveries)} + ' Orders Logged'">0 Orders</span>
+            </div>
+
+            <div class="table-responsive table-scroll sticky-head">
+                <table class="data-table dispatch-table">
+                    <colgroup>
+                        <col class="c-patient">
+                        <col class="c-units">
+                        <col class="c-courier">
+                        <col class="c-time">
+                        <col class="c-status">
+                        <col class="c-actions">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Patient / Hospital</th>
+                            <th class="col-center">Units / Group</th>
+                            <th>Courier &amp; Vehicle</th>
+                            <th class="col-datetime">Scheduled Time</th>
+                            <th class="col-center">Transit Status</th>
+                            <th class="col-actions">Coordination Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(deliveries)}">
+                            <td colspan="6" style="text-align: center; color: var(--slate-400); padding: 32px;">No delivery orders recorded yet.</td>
+                        </tr>
+                        <tr th:each="d : ${deliveries}">
+                            <td class="dispatch-patient">
+                                <strong th:text="${d.request.patientName}" th:title="${d.request.patientName}">Patient Name</strong>
+                                <span th:text="${d.request.hospital}" th:title="${d.request.hospital}">Hospital</span>
+                            </td>
+                            <td class="td-center">
+                                <div class="dispatch-units">
+                                    <span class="blood-badge sm" th:text="${d.request.bloodGroup}">O+</span>
+                                    <small th:text="${d.request.units} + ' Units'">2 Units</small>
+                                </div>
+                            </td>
+                            <td class="dispatch-courier">
+                                <strong th:text="${d.courierName}" th:title="${d.courierName}">Driver Name</strong>
+                                <code th:text="${d.vehicleNumber}" th:title="${d.vehicleNumber}">WP-CAB-1234</code>
+                            </td>
+                            <td class="td-datetime"><span class="date date--datetime" th:text="${d.scheduledAt != null ? #temporals.format(d.scheduledAt, 'dd MMM yyyy · HH:mm') : '—'}" th:title="${d.scheduledAt != null ? #temporals.format(d.scheduledAt, 'dd MMM yyyy · HH:mm') : ''}">28 Sep 2026 · 14:00</span></td>
+                            <td class="td-center">
+                                <span th:class="${d.status == 'Delivered' ? 'badge badge-success' : (d.status == 'Scheduled' ? 'badge badge-info' : 'badge badge-danger')}"
+                                      th:text="${d.status}">Scheduled</span>
+                            </td>
+                            <td class="td-actions">
+                                <div class="dispatch-actions" th:if="${d.status == 'Scheduled'}">
+                                    <form th:action="@{/portal/delivery/{id}/status(id=${d.id})}" method="post" style="display:block; margin: 0;">
+                                        <input type="hidden" name="status" value="Delivered">
+                                        <button class="btn btn-primary btn-sm" style="background: #16a34a; border-color: #16a34a;">
+                                            ✓ Confirm Delivered
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/portal/delivery/{id}/status(id=${d.id})}" method="post" style="display:block; margin: 0;">
+                                        <input type="hidden" name="status" value="Cancelled">
+                                        <button class="btn btn-secondary btn-sm" style="color: var(--crimson);">
+                                            Cancel
+                                        </button>
+                                    </form>
+                                </div>
+                                <span class="completed-note" th:unless="${d.status == 'Scheduled'}">✓ Completed</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

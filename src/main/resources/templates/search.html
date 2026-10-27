@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Find Blood Donors')}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('search')}"></header>
+
+    <!-- Search Header Hero Banner -->
+    <section class="search-header-hero hero-photo hero-photo--donors">
+        <div class="container">
+            <p class="section-subtitle" style="color: var(--carolina-blue); justify-content: center;">Sri Lanka Blood Donor Network</p>
+            <h1>Find Blood Donors</h1>
+            <p style="color: #cbd5e1; max-width: 600px; margin: 0 auto; font-size: 1rem;">
+                Connect with voluntary, screened blood donors across Sri Lanka. Filter by blood type, city, or province.
+            </p>
+        </div>
+    </section>
+
+    <!-- Main Search Page Content -->
+    <main class="container" style="padding-bottom: 70px;">
+        <!-- Alerts -->
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <!-- Prominent Filter Card (Matching blooddonation.lk form) -->
+        <div class="search-filter-card">
+            <form th:action="@{/search}" method="GET">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: end;">
+                    <!-- Blood Type -->
+                    <div class="form-group">
+                        <label for="search-blood-type" class="form-label">Blood Type:</label>
+                        <select id="search-blood-type" name="bloodGroup" class="form-select">
+                            <option value="">All Blood Types</option>
+                            <option value="A+" th:selected="${bloodGroup == 'A+'}">A+</option>
+                            <option value="A-" th:selected="${bloodGroup == 'A-'}">A-</option>
+                            <option value="B+" th:selected="${bloodGroup == 'B+'}">B+</option>
+                            <option value="B-" th:selected="${bloodGroup == 'B-'}">B-</option>
+                            <option value="AB+" th:selected="${bloodGroup == 'AB+'}">AB+</option>
+                            <option value="AB-" th:selected="${bloodGroup == 'AB-'}">AB-</option>
+                            <option value="O+" th:selected="${bloodGroup == 'O+'}">O+</option>
+                            <option value="O-" th:selected="${bloodGroup == 'O-'}">O-</option>
+                        </select>
+                    </div>
+
+                    <!-- City -->
+                    <div class="form-group">
+                        <label for="search-city" class="form-label">City:</label>
+                        <input type="text" id="search-city" name="city" th:value="${city}" placeholder="e.g. Colombo, Kandy" class="form-control">
+                    </div>
+
+                    <!-- Province -->
+                    <div class="form-group">
+                        <label for="search-province" class="form-label">Province:</label>
+                        <select id="search-province" name="province" class="form-select">
+                            <option value="">All Provinces</option>
+                            <option value="Western Province" th:selected="${province == 'Western Province'}">Western Province</option>
+                            <option value="Central Province" th:selected="${province == 'Central Province'}">Central Province</option>
+                            <option value="Southern Province" th:selected="${province == 'Southern Province'}">Southern Province</option>
+                            <option value="Northern Province" th:selected="${province == 'Northern Province'}">Northern Province</option>
+                            <option value="Eastern Province" th:selected="${province == 'Eastern Province'}">Eastern Province</option>
+                            <option value="North Western Province" th:selected="${province == 'North Western Province'}">North Western Province</option>
+                            <option value="North Central Province" th:selected="${province == 'North Central Province'}">North Central Province</option>
+                            <option value="Uva Province" th:selected="${province == 'Uva Province'}">Uva Province</option>
+                            <option value="Sabaragamuwa Province" th:selected="${province == 'Sabaragamuwa Province'}">Sabaragamuwa Province</option>
+                        </select>
+                    </div>
+
+                    <!-- Keyword (Name or Phone) -->
+                    <div class="form-group">
+                        <label for="search-q" class="form-label">Keyword / Name:</label>
+                        <input type="text" id="search-q" name="q" th:value="${q}" placeholder="Name or keyword..." class="form-control">
+                    </div>
+
+                    <!-- Actions -->
+                    <div style="display: flex; gap: 8px;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1; height: 48px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                            <span>Search</span>
+                        </button>
+                        <a th:href="@{/search}" class="btn btn-secondary" style="height: 48px; padding-inline: 16px;" title="Reset filters">Reset</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Search Results Summary -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 36px; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h2 style="font-size: 1.4rem; color: var(--oxford-blue-1);">Available Donors Directory</h2>
+                <p style="color: var(--slate-500); font-size: 0.92rem;" th:text="${#lists.size(donors)} + ' voluntary donor(s) match your search criteria.'">
+                    Listing matching donors.
+                </p>
+            </div>
+            <a th:href="@{/register}" class="btn btn-blue btn-sm">+ Register as a Donor</a>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(donors)}" style="padding: 50px 20px; text-align: center; background: var(--white); border-radius: var(--radius-md); border: 1.5px dashed var(--slate-300); margin-top: 20px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="#94a3b8" style="margin: 0 auto 16px auto;">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--oxford-blue-1); margin-bottom: 6px;">No Donors Found</h3>
+            <p style="color: var(--slate-500); max-width: 480px; margin: 0 auto 20px auto; font-size: 0.95rem;">
+                We could not find any active donors matching your current filter criteria. Try clearing the city/province filter, or invite members to join!
+            </p>
+            <a th:href="@{/search}" class="btn btn-secondary btn-sm">Clear All Filters</a>
+            <a th:href="@{/register}" class="btn btn-primary btn-sm" style="margin-left: 8px;">Be the First Donor Here</a>
+        </div>
+
+        <!-- Donors Grid Cards -->
+        <div th:unless="${#lists.isEmpty(donors)}" class="donor-cards-grid">
+            <div th:each="donor : ${donors}" class="donor-card">
+                <div>
+                    <div class="donor-card-top">
+                        <div class="blood-badge" th:text="${donor.bloodGroup}">O+</div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                <h3 class="donor-name" th:text="${donor.name}">Aman Silva</h3>
+                                <span class="status-badge" 
+                                      th:classappend="${#strings.equalsIgnoreCase(donor.availability, 'Available') ? 'available' : 'unavailable'}"
+                                      th:text="${donor.availability}">
+                                    Available
+                                </span>
+                            </div>
+                            <div class="donor-location">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                                <span th:text="${donor.city != null ? donor.city : 'Sri Lanka'} + (${donor.province != null ? ', ' + donor.province : ''})">Colombo, Western Province</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preferred Donation Slots -->
+                    <div th:if="${not #lists.isEmpty(donor.availabilitySlots)}" style="margin-bottom: 14px;">
+                        <span style="font-size: 0.78rem; font-weight: 600; color: var(--slate-500); text-transform: uppercase; display: block; margin-bottom: 6px;">Available Days &amp; Hours:</span>
+                        <span th:each="slot : ${donor.availabilitySlots}" class="slot-tag" th:text="${slot.day} + ' (' + ${slot.startTime} + '-' + ${slot.endTime} + ')'">
+                            Sat (09:00-13:00)
+                        </span>
+                    </div>
+
+                    <!-- Last Donation Info -->
+                    <div style="font-size: 0.85rem; color: var(--slate-600); margin-bottom: 16px;">
+                        <span th:if="${donor.lastDonatedAt != null}">
+                            Last Donated: <strong class="date date--date" th:text="${#temporals.format(donor.lastDonatedAt, 'dd MMM yyyy')}" th:title="${#temporals.format(donor.lastDonatedAt, 'dd MMM yyyy')}">10 May 2026</strong>
+                        </span>
+                        <span th:if="${donor.lastDonatedAt == null}">
+                            Donation Status: <strong>First-Time Donor / Ready</strong>
+                        </span>
+                    </div>
+
+                    <!-- Notes -->
+                    <p th:if="${donor.notes != null and !donor.notes.isBlank()}" style="font-size: 0.88rem; color: var(--slate-600); background: var(--slate-50); padding: 8px 12px; border-radius: var(--radius-sm); margin-bottom: 16px; border-left: 3px solid var(--carolina-blue);" th:text="${donor.notes}">
+                        Available on weekends.
+                    </p>
+                </div>
+
+                <!-- Footer Action Buttons -->
+                <div style="display: flex; gap: 8px; align-items: center; pt-2; border-top: 1px solid var(--slate-100); padding-top: 14px;">
+                    <div th:if="${donor.allowCall}" style="flex: 1;">
+                        <button type="button" class="btn btn-outline-crimson btn-sm" style="width: 100%;" 
+                                th:data-phone="${donor.phone}" onclick="copyToClipboard(this.getAttribute('data-phone'), 'Donor Phone Number')">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                            <span th:text="${donor.phone}">0771234567</span>
+                        </button>
+                    </div>
+                    <div th:unless="${donor.allowCall}" style="flex: 1;">
+                        <span style="font-size: 0.8rem; color: var(--slate-500); display: block; text-align: center;">🔒 Safe Coordination</span>
+                    </div>
+
+                    <a th:href="@{/donor/{id}(id=${donor.id})}" class="btn btn-secondary btn-sm" style="flex: 1; text-align: center;">
+                        View Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

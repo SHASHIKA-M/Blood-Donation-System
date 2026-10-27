@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Reusable role-based image banner for all portal logins.
+     Usage:
+     <div th:replace="~{portal/_hero :: portalHero('/images/photos/nurse-patient.jpg','Recipient / Patient','Recipient & Patient Portal','Subtitle...')}"></div>
+-->
+<div th:fragment="portalHero(img, eyebrow, title, subtitle)"
+     class="banner-photo" style="margin:0 0 24px 0;min-height:170px;">
+    <img th:src="${img}" alt="Portal banner" loading="eager" decoding="async">
+    <div class="banner-photo-content" style="padding:28px 30px;">
+        <span class="photo-tag" th:text="${eyebrow}"
+              style="position:static;display:inline-flex;margin-bottom:10px;">Portal</span>
+        <h2 th:text="${title}"
+            style="color:#fff;font-size:clamp(1.4rem,2.6vw,1.9rem);font-weight:800;letter-spacing:-.02em;margin:0 0 6px 0;">Portal Title</h2>
+        <p th:text="${subtitle}"
+           style="color:#e2e8f0;font-size:.92rem;line-height:1.6;margin:0;max-width:640px;">Subtitle</p>
+    </div>
+</div>
+</body>
+</html>

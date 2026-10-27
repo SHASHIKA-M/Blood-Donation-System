@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Donor Profile - ' + ${donor.name})}"></head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header th:replace="~{layout :: navbar('search')}"></header>
+
+    <!-- Header Hero Banner -->
+    <section class="search-header-hero hero-photo hero-photo--profile">
+        <div class="container">
+            <p class="section-subtitle" style="color: var(--carolina-blue); justify-content: center;">Registered Voluntary Donor</p>
+            <h1 th:text="${donor.name}">Aman Silva</h1>
+            <p style="color: #cbd5e1; max-width: 600px; margin: 0 auto; font-size: 1rem;">
+                Voluntary donor profile verified with the National Blood Donor Network.
+            </p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container" style="padding-bottom: 80px;">
+        <div th:replace="~{layout :: alerts}"></div>
+
+        <!-- Donor dashboard (owner only): eligibility + journey at a glance -->
+        <div th:if="${session.currentUser != null and session.currentUser.donorId == donor.id}" style="margin-bottom: 24px;">
+            <div class="dash-grid">
+                <div class="dash-widget">
+                    <h4>Donation Eligibility</h4>
+                    <div class="big" th:if="${eligibility == 'ELIGIBLE'}" style="color: var(--success);">Eligible Now</div>
+                    <div class="big" th:if="${eligibility != null and eligibility.startsWith('WAIT:')}" style="color: var(--warning); font-size: 1.2rem;"
+                         th:text="${eligibility.substring(5)} + ' days to go'">120 days to go</div>
+                    <div style="font-size: 0.85rem; color: var(--slate-500);">120-day gap between donations</div>
+                </div>
+                <div class="dash-widget">
+                    <h4>Lifetime Donations</h4>
+                    <div class="big" th:text="${#lists.size(donor.donationHistory)}">0</div>
+                    <div style="font-size: 0.85rem; color: var(--slate-500);"
+                         th:text="${donor.lastDonatedAt != null ? 'Last: ' + #temporals.format(donor.lastDonatedAt, 'dd MMM yyyy') : 'No donations yet'}">No donations yet</div>
+                </div>
+                <div class="dash-widget">
+                    <h4>Book Donation Slot</h4>
+                    <form th:action="@{/portal/donor/appointments}" method="post" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; gap: 8px;">
+                            <select name="branch" class="form-select" style="flex: 1; padding: 8px 10px; font-size: 0.85rem;">
+                                <option value="Main Blood Bank">Main Blood Bank</option>
+                                <option value="Colombo Central">Colombo Central</option>
+                                <option value="Kandy Branch">Kandy Branch</option>
+                                <option value="Galle Branch">Galle Branch</option>
+                            </select>
+                            <input type="datetime-local" name="scheduledAt" required class="form-control" style="flex: 1; padding: 8px 10px; font-size: 0.85rem;">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm" style="width: 100%;">Book Appointment</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Upcoming appointments -->
+            <div class="form-card" style="margin: 0 0 24px 0; padding: 20px 24px;" th:unless="${#lists.isEmpty(myAppointments)}">
+                <h4 style="font-size: 1rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 12px;">My Appointments</h4>
+                <div th:each="appt : ${myAppointments}" class="appt-card">
+                    <div>
+                        <strong class="date date--datetime" th:text="${appt.scheduledAt != null ? #temporals.format(appt.scheduledAt, 'dd MMM yyyy · HH:mm') : '—'}" th:title="${appt.scheduledAt != null ? #temporals.format(appt.scheduledAt, 'dd MMM yyyy · HH:mm') : ''}">Date</strong>
+                        <span style="color: var(--slate-500); font-size: 0.88rem;" th:text="'@ ' + ${appt.branch}">@ Branch</span>
+                        <span class="status-badge" style="margin-left: 8px;"
+                              th:classappend="${appt.status == 'Scheduled' ? 'available' : 'unavailable'}"
+                              th:text="${appt.status}">Scheduled</span>
+                    </div>
+                    <form th:if="${appt.status == 'Scheduled'}" th:action="@{/portal/donor/appointments/{id}/cancel(id=${appt.id})}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-secondary btn-sm"
+                                onclick="return confirm('Cancel this appointment?');">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 320px 1fr; gap: 32px; margin-top: -30px; position: relative; z-index: 10;">
+            <!-- Left Column: Donor Card Summary -->
+            <aside>
+                <div class="form-card" style="margin: 0; text-align: center; padding: 32px 24px;">
+                    <div class="photo" style="border-radius: 14px; aspect-ratio: 16/8; margin-bottom: 18px;">
+                        <img th:src="@{/images/photos/donor-thumbs-up.jpg}" alt="A smiling voluntary blood donor giving a thumbs up during donation" width="560" height="280" loading="lazy" decoding="async">
+                        <span class="photo-tag">Verified voluntary donor</span>
+                    </div>
+                    <div class="blood-badge" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 16px auto;" th:text="${donor.bloodGroup}">
+                        O+
+                    </div>
+
+                    <h2 style="font-size: 1.4rem; color: var(--oxford-blue-1); font-weight: 800;" th:text="${donor.name}">Aman Silva</h2>
+                    <p style="color: var(--slate-500); font-size: 0.9rem; margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        <span th:text="${donor.city != null ? donor.city : 'Sri Lanka'} + (${donor.province != null ? ', ' + donor.province : ''})">Colombo, Western Province</span>
+                    </p>
+
+                    <div style="margin-block: 16px;">
+                        <span class="status-badge" 
+                              th:classappend="${#strings.equalsIgnoreCase(donor.availability, 'Available') ? 'available' : 'unavailable'}"
+                              th:text="${donor.availability}">
+                            Available
+                        </span>
+                    </div>
+
+                    <!-- Contact Details Box -->
+                    <div style="background-color: var(--slate-50); border: 1.5px solid var(--slate-200); border-radius: var(--radius-md); padding: 18px; margin-bottom: 24px; text-align: left;">
+                        <span style="font-size: 0.78rem; text-transform: uppercase; font-weight: 700; color: var(--slate-400); display: block; margin-bottom: 6px;">
+                            Donor Contact Phone
+                        </span>
+                        
+                        <div th:if="${donor.allowCall}">
+                            <div style="font-size: 1.25rem; font-weight: 800; color: var(--crimson); margin-bottom: 10px;" th:text="${donor.phone}">
+                                0771234567
+                            </div>
+                            <button type="button" class="btn btn-outline-crimson btn-sm" style="width: 100%;"
+                                    th:data-phone="${donor.phone}" onclick="copyToClipboard(this.getAttribute('data-phone'), 'Donor Phone Number')">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                                <span>Copy Phone Number</span>
+                            </button>
+                        </div>
+
+                        <div th:unless="${donor.allowCall}">
+                            <span style="font-size: 0.85rem; color: var(--slate-500); line-height: 1.4; display: block;">
+                                🔒 <strong>Private Coordination</strong><br>
+                                Donor opted for protected phone display. Hospital coordinators coordinate donations directly.
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Action Controls (owner only) -->
+                    <div style="display: flex; flex-direction: column; gap: 10px;"
+                         th:if="${session.currentUser != null and session.currentUser.donorId == donor.id}">
+                        <button type="button" class="btn btn-blue" onclick="openModal('edit-profile-modal')" style="width: 100%;">
+                            Edit Profile Details
+                        </button>
+                        <a th:href="@{/logout}" class="btn btn-secondary btn-sm" style="width: 100%; color: var(--crimson); border-color: #fca5a5;">
+                            Sign Out
+                        </a>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right Column: Details & Logs -->
+            <div style="display: flex; flex-direction: column; gap: 28px;">
+                <!-- Preferred Available Hours -->
+                <div class="form-card" style="margin: 0; padding: 28px;">
+                    <h3 style="font-size: 1.25rem; color: var(--oxford-blue-1); font-weight: 800; margin-bottom: 6px;">
+                        Preferred Weekly Donation Hours
+                    </h3>
+                    <p style="color: var(--slate-500); font-size: 0.9rem; margin-bottom: 20px;">
+                        Schedule times during the week when this donor is accessible for blood donation appointments.
+                    </p>
+
+                    <div th:if="${#lists.isEmpty(donor.availabilitySlots)}" style="padding: 24px; text-align: center; background: var(--slate-50); border-radius: var(--radius-md); color: var(--slate-500);">
+                        No weekly time slots configured for this donor yet.
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(donor.availabilitySlots)}" 
+                         style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px;">
+                        <div th:each="slot : ${donor.availabilitySlots}" 
+                             style="padding: 14px 18px; background: var(--slate-50); border-radius: var(--radius-md); border-left: 4px solid var(--crimson); box-shadow: var(--shadow-sm);">
+                            <div style="font-weight: 700; color: var(--oxford-blue-1); font-size: 1rem;" 
+                                 th:text="${slot.day == 'Mon' ? 'Monday' : slot.day == 'Tue' ? 'Tuesday' : slot.day == 'Wed' ? 'Wednesday' : slot.day == 'Thu' ? 'Thursday' : slot.day == 'Fri' ? 'Friday' : slot.day == 'Sat' ? 'Saturday' : slot.day == 'Sun' ? 'Sunday' : slot.day}">
+                                Saturday
+                            </div>
+                            <div style="color: var(--slate-600); font-size: 0.88rem; margin-top: 4px;" th:text="${slot.startTime} + ' &ndash; ' + ${slot.endTime}">
+                                09:00 - 13:00
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Donation History Timeline -->
+                <div class="form-card" style="margin: 0; padding: 28px;">
+                    <h3 style="font-size: 1.25rem; color: var(--oxford-blue-1); font-weight: 800; margin-bottom: 6px;">
+                        Donation History Records
+                    </h3>
+                    <p style="color: var(--slate-500); font-size: 0.9rem; margin-bottom: 20px;">
+                        Verified log of past donations made at national blood banks and collection centers.
+                    </p>
+
+                    <div th:if="${#lists.isEmpty(donor.donationHistory)}" style="padding: 24px; text-align: center; background: var(--slate-50); border-radius: var(--radius-md); color: var(--slate-500); margin-bottom: 24px;">
+                        No previous donations logged for this donor yet.
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(donor.donationHistory)}" style="margin-bottom: 28px; display: flex; flex-direction: column; gap: 14px;">
+                        <div th:each="hist : ${donor.donationHistory}" 
+                             style="display: flex; gap: 16px; padding: 16px; background: var(--slate-50); border-radius: var(--radius-md); border: 1px solid var(--slate-200);">
+                            <div class="schedule-icon" style="width: 40px; height: 40px; background: var(--success); flex-shrink: 0;">
+                                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
+                                    <h4 style="font-size: 1rem; color: var(--oxford-blue-1); font-weight: 700;" th:text="${hist.location}">National Blood Center</h4>
+                                    <span class="date date--datetime" style="font-size: 0.82rem;" th:text="${hist.date != null ? #temporals.format(hist.date, 'dd MMM yyyy · HH:mm') : '—'}" th:title="${hist.date != null ? #temporals.format(hist.date, 'dd MMM yyyy · HH:mm') : ''}">Date</span>
+                                </div>
+                                <p style="color: var(--slate-600); font-size: 0.9rem; margin-top: 4px;" th:text="${hist.notes}">Completed donation successfully.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Record Donation Entry Form (owner only) -->
+                    <div th:if="${session.currentUser != null and session.currentUser.donorId == donor.id}"
+                         style="border-top: 1.5px solid var(--slate-200); padding-top: 24px;">
+                        <h4 style="font-size: 1.05rem; color: var(--oxford-blue-1); font-weight: 700; margin-bottom: 14px;">
+                            + Log a New Blood Donation
+                        </h4>
+
+                        <form th:action="@{/donor/{id}/donations(id=${donor.id})}" method="post">
+                            <div class="form-grid-2" style="margin-bottom: 14px;">
+                                <div class="form-group">
+                                    <label class="form-label">Donation Date &amp; Time *</label>
+                                    <input type="datetime-local" name="date" required class="form-control"
+                                           th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd') + 'T10:00'}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Hospital / Center Location *</label>
+                                    <input type="text" name="location" required placeholder="e.g. National Blood Center Colombo" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 18px;">
+                                <label class="form-label">Notes (Optional)</label>
+                                <input type="text" name="notes" placeholder="e.g. Annual blood drive, no adverse reaction..." class="form-control">
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end;">
+                                <button type="submit" class="btn btn-primary btn-sm">Record Donation Log</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Profile Modal Dialog (owner only) -->
+        <div th:if="${session.currentUser != null and session.currentUser.donorId == donor.id}"
+             id="edit-profile-modal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(14,37,78,0.6);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+            <div class="form-card" style="max-width: 650px; width: 100%; margin: 0; max-height: 90vh; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="font-size: 1.4rem; color: var(--oxford-blue-1); font-weight: 800;">Edit Donor Profile</h3>
+                    <button type="button" onclick="closeModal('edit-profile-modal')" style="font-size: 1.5rem; color: var(--slate-400); cursor: pointer;">&times;</button>
+                </div>
+
+                <form th:action="@{/donor/{id}/edit(id=${donor.id})}" method="post">
+                    <div class="form-grid-2" style="margin-bottom: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" name="name" th:value="${donor.name}" required class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number *</label>
+                            <input type="tel" name="phone" th:value="${donor.phone}" required class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-3" style="margin-bottom: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">Blood Group *</label>
+                            <select name="bloodGroup" required class="form-select">
+                                <option value="A+" th:selected="${donor.bloodGroup == 'A+'}">A+</option>
+                                <option value="A-" th:selected="${donor.bloodGroup == 'A-'}">A-</option>
+                                <option value="B+" th:selected="${donor.bloodGroup == 'B+'}">B+</option>
+                                <option value="B-" th:selected="${donor.bloodGroup == 'B-'}">B-</option>
+                                <option value="AB+" th:selected="${donor.bloodGroup == 'AB+'}">AB+</option>
+                                <option value="AB-" th:selected="${donor.bloodGroup == 'AB-'}">AB-</option>
+                                <option value="O+" th:selected="${donor.bloodGroup == 'O+'}">O+</option>
+                                <option value="O-" th:selected="${donor.bloodGroup == 'O-'}">O-</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">City *</label>
+                            <input type="text" name="city" th:value="${donor.city}" required class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Province *</label>
+                            <select name="province" class="form-select">
+                                <option value="Western Province" th:selected="${donor.province == 'Western Province'}">Western Province</option>
+                                <option value="Central Province" th:selected="${donor.province == 'Central Province'}">Central Province</option>
+                                <option value="Southern Province" th:selected="${donor.province == 'Southern Province'}">Southern Province</option>
+                                <option value="Northern Province" th:selected="${donor.province == 'Northern Province'}">Northern Province</option>
+                                <option value="Eastern Province" th:selected="${donor.province == 'Eastern Province'}">Eastern Province</option>
+                                <option value="North Western Province" th:selected="${donor.province == 'North Western Province'}">North Western Province</option>
+                                <option value="North Central Province" th:selected="${donor.province == 'North Central Province'}">North Central Province</option>
+                                <option value="Uva Province" th:selected="${donor.province == 'Uva Province'}">Uva Province</option>
+                                <option value="Sabaragamuwa Province" th:selected="${donor.province == 'Sabaragamuwa Province'}">Sabaragamuwa Province</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2" style="margin-bottom: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">Availability Status</label>
+                            <select name="availability" class="form-select">
+                                <option value="Available" th:selected="${donor.availability == 'Available'}">Available (Ready to Donate)</option>
+                                <option value="Unavailable" th:selected="${donor.availability == 'Unavailable'}">Temporarily Unavailable</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="justify-content: flex-end; padding-bottom: 6px;">
+                            <label class="form-label">Phone Privacy</label>
+                            <div class="checkbox-wrap" style="margin-top: 6px;">
+                                <input type="checkbox" id="edit-allowCall" name="allowCall" th:checked="${donor.allowCall}">
+                                <label for="edit-allowCall" style="font-size: 0.9rem; color: var(--slate-700); cursor: pointer;">Allow patients to view my phone</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 24px;">
+                        <label class="form-label">Notes</label>
+                        <textarea name="notes" rows="3" class="form-control" th:text="${donor.notes}"></textarea>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('edit-profile-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Component -->
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>
