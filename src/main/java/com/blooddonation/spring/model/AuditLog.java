@@ -1,6 +1,8 @@
 package com.blooddonation.spring.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,7 +20,7 @@ public class AuditLog {
     @Column(nullable = false)
     private String action;
 
-    @Column(columnDefinition = "NVARCHAR(MAX)")
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private String details;
 
     @Column(name = "created_at")

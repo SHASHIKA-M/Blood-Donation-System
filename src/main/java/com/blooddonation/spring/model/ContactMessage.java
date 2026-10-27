@@ -1,6 +1,8 @@
 package com.blooddonation.spring.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -21,7 +23,7 @@ public class ContactMessage {
 
     private String subject;
 
-    @Column(columnDefinition = "NVARCHAR(MAX)")
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private String message;
 
     @Column(nullable = false, length = 20)

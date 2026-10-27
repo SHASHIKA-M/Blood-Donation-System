@@ -1,6 +1,8 @@
 package com.blooddonation.spring.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "permission_configs")
@@ -10,7 +12,8 @@ public class PermissionConfig {
     @Column(length = 30)
     private String role;
 
-    @Column(nullable = false, columnDefinition = "NVARCHAR(MAX)")
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Column(nullable = false)
     private String permissions;
 
     public PermissionConfig() {}

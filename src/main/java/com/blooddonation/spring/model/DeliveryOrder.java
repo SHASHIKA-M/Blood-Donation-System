@@ -1,6 +1,8 @@
 package com.blooddonation.spring.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 
 @Entity
@@ -15,7 +17,7 @@ public class DeliveryOrder {
     private LocalDateTime scheduledAt;
     private LocalDateTime deliveredAt;
     @Column(nullable = false, length = 25) private String status = "Scheduled";
-    @Column(columnDefinition = "NVARCHAR(MAX)") private String notes;
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR) private String notes;
 
     public String getId() { return id; } public Request getRequest() { return request; } public void setRequest(Request request) { this.request = request; }
     public String getCourierName() { return courierName; } public void setCourierName(String courierName) { this.courierName = courierName; }

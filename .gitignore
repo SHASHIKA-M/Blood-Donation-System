@@ -1,4 +1,4 @@
-# Build + IDE (regenerated automatically)
+# Build output & tooling
 target/
 .idea/
 *.iml
@@ -10,5 +10,7 @@ app-run.log
 Thumbs.db
 .DS_Store
 
-# Env secrets (copy .env.example instead)
+# Env secrets (copy .env.example instead) — never commit real credentials
 .env
+.env.*
+!.env.example

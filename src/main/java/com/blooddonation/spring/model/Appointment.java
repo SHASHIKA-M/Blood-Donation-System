@@ -1,6 +1,8 @@
 package com.blooddonation.spring.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -41,7 +43,7 @@ public class Appointment {
     @Column(nullable = false, length = 20)
     private String status = "Scheduled";
 
-    @Column(columnDefinition = "NVARCHAR(MAX)")
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private String notes;
 
     @Column(name = "created_at")

@@ -1,6 +1,8 @@
 package com.blooddonation.spring.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,7 +33,7 @@ public class BloodUnit {
     private Boolean syphilisNonReactive;
     private Boolean malariaNonReactive;
     private Boolean crossMatchCompatible;
-    @Column(columnDefinition = "NVARCHAR(MAX)") private String qualityNotes;
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR) private String qualityNotes;
     private LocalDateTime screenedAt;
 
     public String getId() { return id; } public void setId(String id) { this.id = id; }

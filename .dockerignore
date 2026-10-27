@@ -1,0 +1,18 @@
+target/
+.idea/
+*.iml
+.git/
+.gitignore
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.*
+# Windows-only SQL Server integrated-auth DLL — not needed on Linux containers
+native/
+src/main/resources/native/
+demo/
+docs/
+.run/
+run.bat
+README.md

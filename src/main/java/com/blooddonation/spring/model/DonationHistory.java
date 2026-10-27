@@ -1,6 +1,8 @@
 package com.blooddonation.spring.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -22,7 +24,7 @@ public class DonationHistory {
     @Column(length = 255)
     private String location;
 
-    @Column(columnDefinition = "NVARCHAR(MAX)")
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private String notes;
 
     public DonationHistory(LocalDateTime date, String location, String notes) {

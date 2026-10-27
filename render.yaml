@@ -1,0 +1,43 @@
+# =============================================================
+#  render.yaml  —  BloodConnect / Blood-Donation-System
+#  Render Dashboard -> New -> Blueprint -> repo එක තෝරන්න -> Apply
+#  මේකෙන් හැදෙන දේ:
+#    1) blood-donation     : Docker web service (Spring Boot), free plan
+#    2) blood-donation-db  : Postgres database, free plan
+# =============================================================
+
+services:
+  - type: web
+    name: blood-donation
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    region: singapore
+    branch: main
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # Database URL එක Render එකෙන් තමන්ම හදලා මෙතනට දානවා.
+      # (app එකේ DataSourceConfig.java එකෙන් postgresql:// -> jdbc:postgresql://
+      #  බවට හරවන නිසා අතින් edit කරන්න ඕන නෑ)
+      - key: DB_URL
+        fromDatabase:
+          name: blood-donation-db
+          property: connectionString
+      - key: DDL_AUTO
+        value: update
+      - key: APP_SEED
+        value: "true"          # demo logins (pass123) seed කරනවා
+      - key: THYMELEAF_CACHE
+        value: "true"
+      - key: LOG_LEVEL
+        value: INFO
+
+databases:
+  - name: blood-donation-db
+    databaseName: blood_connect
+    user: blood
+    region: singapore
+    plan: free                 # free database එක දවස් 30න් expire වෙනවා
+    postgresMajorVersion: "17"

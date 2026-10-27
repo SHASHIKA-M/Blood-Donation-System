@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.hibernate.annotations.BatchSize;
 
 @Entity
@@ -34,7 +36,7 @@ public class Donor {
 
     private String province;
 
-    @Column(columnDefinition = "NVARCHAR(MAX)")
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private String notes;
 
     @Column(nullable = false, length = 20)
